@@ -19,6 +19,7 @@ dependencies = [
     "scipy>=1.13",
     "numpy>=1.26",
     "pandas>=2.2",
+    "matplotlib>=3.8",
     "codecarbon>=2.3",
 ]
 
