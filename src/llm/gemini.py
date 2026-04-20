@@ -3,7 +3,7 @@ from typing import Any
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    import google.generativeai as genai  # type: ignore[import-untyped]
+    import google.generativeai as genai
 
 from src.config import settings
 from src.ingestion.schema import RiskBrief

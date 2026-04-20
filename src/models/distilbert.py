@@ -237,7 +237,7 @@ class FinSightClassifier:
         return self.predict_batch([text])[0]
 
     def predict_batch(self, texts: list[str]) -> list[ClassificationResult]:
-        self.model.eval()
+        self.model.eval()  # type: ignore[no-untyped-call]
         results: list[ClassificationResult] = []
         batch_size = 32
 
