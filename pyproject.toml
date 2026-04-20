@@ -49,6 +49,7 @@ select = ["E", "F", "I", "N", "W"]
 [tool.mypy]
 strict = true
 ignore_missing_imports = true
+explicit_package_bases = true
 
 [tool.pyright]
 pythonVersion = "3.11"
