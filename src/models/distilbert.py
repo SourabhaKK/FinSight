@@ -75,7 +75,7 @@ class FinSightClassifier:
             self.model = AutoModelForSequenceClassification.from_pretrained(
                 self.MODEL_NAME, num_labels=self.NUM_LABELS
             )
-            self.model.to(self.device)
+            self.model.to(self.device)  # type: ignore[arg-type]
 
     def _load_from_path(self, path: str) -> None:
         checkpoint = torch.load(path, map_location=self.device, weights_only=False)
@@ -88,7 +88,7 @@ class FinSightClassifier:
         self.model.load_state_dict(
             {k: v.to(self.device) for k, v in checkpoint["model_state_dict"].items()}
         )
-        self.model.to(self.device)
+        self.model.to(self.device)  # type: ignore[arg-type]
 
     def train(
         self,
@@ -110,7 +110,7 @@ class FinSightClassifier:
         warmup_steps = int(0.1 * total_steps)
 
         optimizer = AdamW(self.model.parameters(), lr=lr)
-        scheduler = get_linear_schedule_with_warmup(
+        scheduler = get_linear_schedule_with_warmup(  # type: ignore[no-untyped-call]
             optimizer,
             num_warmup_steps=warmup_steps,
             num_training_steps=total_steps,
@@ -161,7 +161,7 @@ class FinSightClassifier:
             avg_train_loss = total_train_loss / len(train_loader)
 
             # --- validation ---
-            self.model.eval()
+            self.model.eval()  # type: ignore[no-untyped-call]
             total_val_loss = 0.0
             correct = 0
             total = 0

@@ -1,6 +1,5 @@
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
+from typing import Any
 
 
 class LLMClient(ABC):
@@ -9,7 +8,7 @@ class LLMClient(ABC):
         self,
         article_text: str,
         classification_label: str,
-    ) -> dict: ...
+    ) -> dict[str, Any]: ...
 
 
 def get_llm_client(provider: str) -> LLMClient:

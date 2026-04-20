@@ -1,10 +1,9 @@
-from __future__ import annotations
-
 import warnings
+from typing import Any
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    import google.generativeai as genai
+    import google.generativeai as genai  # type: ignore[import-untyped]
 
 from src.config import settings
 from src.ingestion.schema import RiskBrief
@@ -18,11 +17,11 @@ _SYSTEM_INSTRUCTION = (
 
 class GeminiClient(LLMClient):
     def __init__(self) -> None:
-        genai.configure(api_key=settings.gemini_api_key)
-        self._model = genai.GenerativeModel(
+        genai.configure(api_key=settings.gemini_api_key)  # type: ignore[attr-defined]
+        self._model = genai.GenerativeModel(  # type: ignore[attr-defined]
             model_name=settings.gemini_model,
             system_instruction=_SYSTEM_INSTRUCTION,
-            generation_config=genai.GenerationConfig(
+            generation_config=genai.GenerationConfig(  # type: ignore[attr-defined]
                 response_mime_type="application/json",
                 response_schema=RiskBrief,
                 temperature=0.0,
@@ -33,7 +32,7 @@ class GeminiClient(LLMClient):
         self,
         article_text: str,
         classification_label: str,
-    ) -> dict:
+    ) -> dict[str, Any]:
         snippet = article_text[:500]
         prompt = (
             f"Article (truncated to 500 chars):\n{snippet}\n\n"

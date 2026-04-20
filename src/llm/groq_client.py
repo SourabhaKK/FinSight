@@ -1,6 +1,5 @@
-from __future__ import annotations
-
 import json
+from typing import Any
 
 from groq import AsyncGroq
 
@@ -25,7 +24,7 @@ class GroqClient(LLMClient):
         self,
         article_text: str,
         classification_label: str,
-    ) -> dict:
+    ) -> dict[str, Any]:
         snippet = article_text[:500]
         user_prompt = (
             f"Article (truncated to 500 chars):\n{snippet}\n\n"
@@ -41,6 +40,7 @@ class GroqClient(LLMClient):
             response_format={"type": "json_object"},
             temperature=0.0,
         )
-        data = json.loads(response.choices[0].message.content)
+        content = response.choices[0].message.content or "{}"
+        data = json.loads(content)
         brief = RiskBrief(**data)
         return brief.model_dump()

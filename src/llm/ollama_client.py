@@ -1,6 +1,5 @@
-from __future__ import annotations
-
 import json
+from typing import Any
 
 import httpx
 
@@ -18,7 +17,7 @@ class OllamaClient(LLMClient):
         self,
         article_text: str,
         classification_label: str,
-    ) -> dict:
+    ) -> dict[str, Any]:
         snippet = article_text[:500]
         prompt = (
             "You are a financial risk analyst. "
