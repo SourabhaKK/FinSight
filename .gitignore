@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Model artefacts (large binaries — keep only .gitkeep)
+artefacts/*.pt
+artefacts/*.joblib
+artefacts/*.bin
+
+# Data (downloaded at runtime — keep only .gitkeep)
+data/*.csv
+data/*.json
+data/*.parquet
+data/*.arrow
+data/*.lock
+
+# Emissions & training logs (committed separately after training)
+artefacts/emissions.csv
+artefacts/training_history.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# MyPy
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+# uv
+.uv/
+
+# Environment files (never commit real keys)
+.env
+.env.local
