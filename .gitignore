@@ -56,4 +56,3 @@ htmlcov/
 # Environment files (never commit real keys)
 .env
 .env.local
-notebooks/plots/
