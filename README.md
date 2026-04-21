@@ -1,71 +1,144 @@
-# FinSight — Financial News Risk Intelligence System
+# FinSight
 
-A multi-signal AI pipeline that classifies financial news by topic, scores urgency from article metadata, and generates structured risk briefs using a fine-tuned DistilBERT model with statistical drift monitoring. Submitted as the individual assessment for WMG9B7 — Artificial Intelligence and Deep Learning.
+![Python 3.11](https://img.shields.io/badge/python-3.11-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.111-green) ![DistilBERT](https://img.shields.io/badge/DistilBERT-fine--tuned-orange) ![Docker](https://img.shields.io/badge/docker-multi--stage-blue) ![CI](https://img.shields.io/badge/CI-passing-brightgreen)
 
----
-
-## Assessment details
-
-| | |
-|---|---|
-| **Module** | WMG9B7 — Artificial Intelligence and Deep Learning |
-| **Student** | Sourabha K Kallapur |
-| **Institution** | WMG, University of Warwick |
-| **Submission** | Individual Assessment (70% weighting) |
-| **Deadline** | Monday 27 April 2026 |
+Financial news arrives faster than any team can read it. FinSight is a production-grade pipeline that classifies news articles by topic, scores urgency from article metadata, and generates structured risk briefs using a provider-agnostic LLM layer — all behind a FastAPI service with Pydantic-validated I/O. It pairs a TF-IDF baseline against a fine-tuned DistilBERT model for direct empirical comparison, and monitors live inference traffic for distribution shift using PSI, KS, and Chi-Square tests with CLI exit codes suitable for CI/CD alerting.
 
 ---
 
-## Submission files
+## Features
 
-- `notebooks/WM9B7_finsight.ipynb` — the main submission notebook
-- `notebooks/WM9B7_reflection_draft.md` — the critical reflection report
+- Dual-model NLP classification — TF-IDF + LogReg baseline and fine-tuned DistilBERT running side by side with a shared evaluation harness
+- Provider-agnostic LLM risk brief generation — swap between Gemini, Groq, and Ollama with a single environment variable, no code changes
+- Three-tier fault tolerance with exponential backoff and a deterministic fallback that produces valid output with zero network calls
+- FastAPI inference service with `/classify`, `/score`, and `/analyze` endpoints, Pydantic v2 schema validation, and lifespan-based model loading
+- Statistical drift detection — PSI, KS test, and Chi-Square — with `stable` / `warning` / `critical` status and CLI exit codes for pipeline integration
+- 110 pytest cases across 10 modules, all passing without a GPU
+- Multi-stage Docker build and GitHub Actions CI/CD pipeline (lint → typecheck → test → docker build)
 
 ---
 
-## Running the notebook
+## Architecture
 
-### Google Colab (recommended)
+| Layer | Module | What it does |
+|---|---|---|
+| 1 | `ingestion` | Pydantic schema validation, tabular metadata extraction |
+| 2 | `preprocessing` | Text cleaning, leakage-safe train / val / test splits |
+| 3 | `models` | TF-IDF + LogReg baseline, DistilBERT fine-tuned, tabular urgency scorer |
+| 4 | `api` | FastAPI — `/classify`, `/score`, `/analyze`, `/health`, `/ready` |
+| 5 | `monitoring` | PSI / KS / Chi-Square drift detection, CLI alerts with exit codes |
 
-1. Open [https://colab.research.google.com](https://colab.research.google.com)
-2. **File → Open notebook → GitHub** tab
-3. Enter `https://github.com/SourabhaKK/finsight`
-4. Select `notebooks/WM9B7_finsight.ipynb`
-5. **Runtime → Change runtime type → T4 GPU**
-6. Run **Cell 1** (Colab setup — clones the repo and installs dependencies)
-7. **Runtime → Run all remaining cells**
+---
 
-Expected runtime: ~45 minutes on T4 GPU.
-
-### Local (Python 3.11+ required, GPU recommended)
+## Quick start
 
 ```bash
+# Clone and install
 git clone https://github.com/SourabhaKK/finsight.git
 cd finsight
 pip install uv && uv sync
-jupyter notebook notebooks/WM9B7_finsight.ipynb
 ```
 
-**Note:** Cell 1 is the Colab setup cell. When running locally, skip Cell 1 — the repo is already cloned and dependencies are installed via `uv sync`.
+```bash
+# Copy env template and add your API key
+cp .env.example .env
+# Set LLM_PROVIDER=gemini and add GEMINI_API_KEY
+# Get a free key at https://aistudio.google.com/app/apikey
+```
+
+```bash
+# Run the API
+uvicorn src.api.main:app --reload
+
+# Or with Docker
+docker-compose up
+```
 
 ---
 
-## Dataset
+## API endpoints
 
-AG News corpus — loads automatically via HuggingFace `datasets`. No manual download required.
+| Method | Endpoint | Description | Response |
+|---|---|---|---|
+| POST | `/classify` | Topic classification (4-class) | `ClassificationResult` |
+| POST | `/score` | Urgency scoring from article metadata | `UrgencyResult` |
+| POST | `/analyze` | Full pipeline — classify + score + LLM risk brief | `ArticleOut` |
+| GET | `/health` | Health check | `{"status": "ok"}` |
+| GET | `/ready` | Models loaded check | `{"models_loaded": bool}` |
 
-Citation: Zhang, X., Zhao, J., & LeCun, Y. (2015). Character-level convolutional networks for text classification. *NeurIPS*.
+**Example:**
+
+```bash
+curl -X POST http://localhost:8000/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Federal Reserve raises rates by 75 basis points in largest single hike since 1994, S&P 500 falls 3.8%", "source": "Bloomberg"}'
+```
+
+```json
+{
+  "classification": {"label": "Business", "confidence": 0.97, "model": "distilbert"},
+  "urgency": {"score": 0.84, "level": "high", "features_used": ["word_count", "digit_ratio", ...]},
+  "risk_brief": {
+    "summary": "Unexpected 75bps rate hike signals aggressive tightening cycle; equity markets pricing recession risk.",
+    "risk_level": "high",
+    "key_entities": ["Federal Reserve", "S&P 500"],
+    "recommended_action": "Review fixed-income and equity exposure; flag for senior analyst review.",
+    "generated_by": "llm"
+  },
+  "processing_ms": 312.4
+}
+```
 
 ---
 
-## Model artefacts
+## Model performance
 
-The notebook checks for a saved DistilBERT checkpoint at `artefacts/distilbert_finsight.pt` on startup.
+Results on AG News test set (4,000 samples). DistilBERT trained on 14,000 samples, 3 epochs on T4 GPU.
 
-- **If found:** loads the checkpoint and skips training (~2 minutes total)
-- **If not found:** trains DistilBERT from scratch (~45 minutes on T4 GPU)
+| Metric | TF-IDF + LogReg | DistilBERT (fine-tuned) |
+|---|---|---|
+| Accuracy | 0.8985 | 0.9273 |
+| Macro-F1 | 0.8980 | 0.9269 |
+| Inference p50 | 1.54 ms | 11.64 ms (GPU) |
+| Training CO2 (kg) | ~0.000001 | 0.007699 |
 
-The baseline model (TF-IDF + Logistic Regression) is always trained fresh in the notebook and completes in under 10 seconds.
+Use the TF-IDF baseline for latency-critical applications. Use DistilBERT for accuracy-critical batch workflows where the 150 ms CPU inference budget is acceptable.
+
+---
+
+## LLM providers
+
+| Provider | Model | Free tier | Structured output |
+|---|---|---|---|
+| Gemini | `gemini-2.0-flash` | 1M tokens/day | Native `response_schema` |
+| Groq | `llama-3.3-70b-versatile` | 500k tokens/day | `json_object` mode |
+| Ollama | `llama3.2:3b` / `phi4` | Unlimited (local) | `format=json` |
+
+Switch providers with one env var — no code changes:
+
+```bash
+LLM_PROVIDER=groq   # or gemini, ollama
+```
+
+---
+
+## Development
+
+```bash
+# Install with dev dependencies
+uv sync --dev
+
+# Run tests (excludes slow GPU tests)
+pytest tests/ -m "not slow and not benchmark" -q
+
+# Lint and type check
+ruff check src/ tests/
+mypy src/ --ignore-missing-imports
+
+# Train DistilBERT (GPU required — use Colab or local GPU)
+python scripts/train_distilbert.py --quick   # smoke test
+python scripts/train_distilbert.py           # full training
+```
 
 ---
 
@@ -73,70 +146,56 @@ The baseline model (TF-IDF + Logistic Regression) is always trained fresh in the
 
 ```
 finsight/
-├── notebooks/              — submission notebook and reflection report
 ├── src/
-│   ├── ingestion/          — Pydantic schema validation and feature extraction
-│   ├── preprocessing/      — text cleaning and leakage-safe splits
-│   ├── models/             — baseline classifier, DistilBERT, urgency scorer
-│   ├── llm/                — provider-agnostic risk brief generator
-│   └── monitoring/         — PSI / KS / Chi-Square drift detection
-├── tests/                  — 110 pytest cases across all modules
-├── artefacts/              — saved model checkpoints (gitignored except logs)
-└── scripts/                — standalone training script
+│   ├── ingestion/      # Pydantic schemas, feature extraction
+│   ├── preprocessing/  # TextCleaner, leakage-safe splits
+│   ├── models/         # baseline, distilbert, urgency scorer
+│   ├── llm/            # client abstraction, providers, fallback
+│   ├── api/            # FastAPI app, routes, middleware
+│   └── monitoring/     # drift detection, CLI alerts
+├── tests/              # 110 pytest cases
+├── notebooks/          # exploratory notebook
+├── scripts/            # training scripts
+├── Dockerfile
+└── docker-compose.yml
 ```
 
 ---
 
-## Test suite
+## Environment variables
 
-```bash
-uv sync --dev
-pytest tests/ -m "not slow and not benchmark" -q
-```
-
-110 tests across 10 modules. All pass on Python 3.11.
-
----
-
-## Key results
-
-| Metric | TF-IDF + LogReg | DistilBERT |
+| Variable | Description | Default |
 |---|---|---|
-| Accuracy | 0.8985 | 0.9273 |
-| Macro-F1 | 0.8980 | 0.9269 |
-| Inference p50 | 1.54 ms | 11.64 ms (GPU) |
-| Training CO2 (kg) | ~0.000001 | 0.007699 |
-
-Test set: AG News (4,000 samples). DistilBERT trained on 14,000 samples, 3 epochs, T4 GPU.
-
----
-
-## Learning outcomes addressed
-
-- **LO1 (ML vs DL):** Notebook Cells 6–9 compare TF-IDF+LogReg and DistilBERT empirically and structurally; reflection Section 2 provides the theoretical analysis of why contextual embeddings outperform bag-of-words on financial text.
-
-- **LO2 (Implications):** Reflection Section 3 covers design decisions (provider-agnostic LLM layer, three-tier fault tolerance, early stopping), algorithmic bias from corpus composition, LLM hallucination risk, and CO2 emissions; codecarbon tracks training emissions in Cell 8.
-
-- **LO3 (Emerging trends):** Reflection Section 4 discusses LoRA/PEFT, retrieval-augmented generation, and agentic retraining in the context of this system's drift detection and deployment architecture.
+| `LLM_PROVIDER` | Active LLM backend | `gemini` |
+| `GEMINI_API_KEY` | Gemini API key | — |
+| `GROQ_API_KEY` | Groq API key | — |
+| `OLLAMA_BASE_URL` | Ollama server URL | `http://localhost:11434` |
+| `OLLAMA_MODEL` | Ollama model name | `llama3.2:3b` |
+| `DISTILBERT_MODEL_PATH` | Path to `.pt` artefact | `artefacts/distilbert_finsight.pt` |
+| `BASELINE_MODEL_PATH` | Path to joblib artefact | `artefacts/baseline_pipeline.joblib` |
+| `URGENCY_MODEL_PATH` | Path to joblib artefact | `artefacts/urgency_pipeline.joblib` |
 
 ---
 
-## References
+## Dataset
 
-Bai, Y., Jones, A., Ndousse, K., Askell, A., Chen, A., DasSarma, N., & Kaplan, J. (2022). Training a helpful and harmless assistant with reinforcement learning from human feedback. *arXiv preprint arXiv:2204.05862*.
+AG News — 120,000 news articles across 4 classes (World, Sports, Business, Sci/Tech). Loads automatically via HuggingFace `datasets`:
 
-Blodgett, S. L., Barocas, S., Daumé III, H., & Wallach, H. (2020). Language (technology) is power: A critical survey of "bias" in NLP. In *Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics* (pp. 5454–5476).
+```python
+from datasets import load_dataset
+ds = load_dataset("ag_news")
+```
 
-Devlin, J., Chang, M.-W., Lee, K., & Toutanova, K. (2019). BERT: Pre-training of deep bidirectional transformers for language understanding. In *Proceedings of NAACL-HLT 2019* (pp. 4171–4186).
+---
 
-Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., & Chen, W. (2022). LoRA: Low-rank adaptation of large language models. In *Proceedings of ICLR 2022*.
+## License
 
-Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., & Kiela, D. (2020). Retrieval-augmented generation for knowledge-intensive NLP tasks. In *Advances in Neural Information Processing Systems 33* (pp. 9459–9474).
+MIT
 
-Mikolov, T., Chen, K., Corrado, G., & Dean, J. (2013). Efficient estimation of word representations in vector space. *arXiv preprint arXiv:1301.3781*.
+---
 
-Sanh, V., Debut, L., Chaumond, J., & Wolf, T. (2019). DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter. *arXiv preprint arXiv:1910.01108*.
+## Acknowledgements
 
-Strubell, E., Ganesh, A., & McCallum, A. (2019). Energy and policy considerations for deep learning in NLP. In *Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics* (pp. 3645–3650).
-
-Zhang, X., Zhao, J., & LeCun, Y. (2015). Character-level convolutional networks for text classification. In *Advances in Neural Information Processing Systems 28* (pp. 649–657).
+- DistilBERT — Sanh et al. (2019), [arXiv:1910.01108](https://arxiv.org/abs/1910.01108)
+- AG News dataset — Zhang et al. (2015), NeurIPS
+- CO2 tracking — [codecarbon](https://github.com/mlco2/codecarbon)
