@@ -2,7 +2,7 @@
 
 **Student:** Sourabha K Kallapur
 **Module:** WMG9B7 — Artificial Intelligence and Deep Learning
-**Word count:** 2703
+**Word count:** 2776
 
 ---
 
@@ -39,7 +39,7 @@ The self-attention mechanism enables DistilBERT to model the dependency between 
 
 ### 2.3 Empirical Comparison
 
-The following metrics were obtained by evaluating both models on the AG News test set (500 samples for the baseline, 200 for DistilBERT) after fine-tuning on 20,000 training samples.
+The following metrics were obtained by evaluating both models on the AG News test set (Zhang et al., 2015) — 4,000 samples for both models — after fine-tuning on 20,000 training samples.
 
 | Metric             | TF-IDF + LogReg | DistilBERT   |
 |--------------------|-----------------|--------------|
@@ -49,7 +49,7 @@ The following metrics were obtained by evaluating both models on the AG News tes
 | Training time      | < 5 s           | ~8 min (GPU) / ~3 hr (CPU)     |
 | CO2 emitted (kg)   | ~0.000001       | 0.007699                       |
 
-The accuracy gap of 4.1 percentage points is statistically meaningful at this sample size, but it does not resolve the architectural choice unambiguously. For a batch-processing risk analytics workflow that executes overnight, the 150 ms inference latency per article is entirely acceptable and DistilBERT is the correct choice. For a real-time trading system that must classify an article within 10 ms of publication, the baseline is preferable. The decision depends on the deployment context, not on which number is larger.
+The accuracy gap of 2.9 percentage points is statistically meaningful at this sample size, but it does not resolve the architectural choice unambiguously. For a batch-processing risk analytics workflow that executes overnight, the 150 ms inference latency per article is entirely acceptable and DistilBERT is the correct choice. For a real-time trading system that must classify an article within 10 ms of publication, the baseline is preferable. The decision depends on the deployment context, not on which number is larger.
 
 ### 2.4 Justification for Deep Learning in This Project
 
@@ -81,7 +81,7 @@ The DistilBERT training loop monitors validation loss after every epoch and save
 **Algorithmic bias in financial news routing.**
 FinSight's classifier was trained on AG News, a corpus of English-language news predominantly sourced from Western financial and general press outlets. Blodgett et al. (2020) demonstrate that NLP systems trained on majority-register corpora systematically underperform on text from minority registers — different writing styles, dialects, or structural conventions. In the financial domain, this translates to a measurable risk: articles from regional financial press in non-English-speaking markets, or from outlets that do not write in the dominant register of the training corpus, may be systematically misclassified. A risk intelligence system that reliably classifies Bloomberg and Reuters articles but fails on El Economista or Caixin would produce a structurally biased view of global market risk, disadvantaging analysts and ultimately the markets of those regions.
 
-The mitigation available at this stage of the project is transparency: the model card should document the training corpus, its geographic and linguistic composition, and the expected performance degradation on out-of-distribution text. A production system would require regular evaluation against a deliberately diverse holdout set.
+The mitigation available at this stage of the project is transparency: the model card should document the training corpus, its geographic and linguistic composition, and the expected performance degradation on out-of-distribution text. A production deployment would require evaluation against a geographically stratified holdout — sampling equally from AP, Reuters, Al Jazeera English, and Xinhua financial wire services, for example — and reweighting the training corpus or applying domain adaptation where systematic performance gaps are found. Critically, FinSight's drift detection engine provides the infrastructure for the latter: a persistent drop in classification confidence on articles from a specific source cluster would surface as a distributional shift in the PSI monitor, triggering targeted retraining on that subpopulation rather than a full pipeline retrain.
 
 **LLM hallucination in risk briefs.**
 The `/analyze` endpoint returns a `RiskBrief` containing `risk_level` and `recommended_action` fields. When `generated_by="llm"`, these values are produced by a language model that is capable of generating plausible but factually incorrect content. A miscategorised `risk_level` — for example, "low" on a genuine market-moving event — could delay the escalation of a position review with material financial consequences.
@@ -89,7 +89,7 @@ The `/analyze` endpoint returns a `RiskBrief` containing `risk_level` and `recom
 Two mitigations are baked into the implementation. First, `temperature=0.0` is set on all LLM calls, eliminating sampling randomness and producing deterministic outputs for identical inputs. Second, Pydantic schema validation at the response parsing stage ensures that structurally invalid outputs — wrong field types, out-of-vocabulary `risk_level` values — are rejected before reaching the caller. These mitigations reduce the probability of structural errors but cannot eliminate factual hallucination. Human review remains necessary for any LLM-generated output used in an investment decision.
 
 **Environmental cost of fine-tuning.**
-The emissions.csv tracking file recorded 0.007699 kg CO2 (approximately 7.7 grams) across the three training epochs across all training runs during development. Strubell et al. (2019) contextualised the environmental cost of NLP model training, showing that training a single BERT model from scratch emits approximately 652 kg CO2e — more than a transatlantic flight. FinSight's footprint is several orders of magnitude smaller because fine-tuning reuses pre-trained weights. The measurement and reporting of training emissions via codecarbon is itself a contribution to responsible AI practice: it makes the cost visible, which is the precondition for managing it.
+The emissions.csv tracking file recorded 0.007699 kg CO2 (approximately 7.7 grams) across the three training epochs. Strubell et al. (2019) contextualised the environmental cost of NLP model training, showing that training a single BERT model from scratch emits approximately 652 kg CO2e — more than a transatlantic flight. FinSight's footprint is several orders of magnitude smaller because fine-tuning reuses pre-trained weights. The measurement and reporting of training emissions via codecarbon is itself a contribution to responsible AI practice: it makes the cost visible, which is the precondition for managing it.
 
 ### 3.3 Use of AI Assistance
 
