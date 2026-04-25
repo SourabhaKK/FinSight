@@ -168,8 +168,8 @@ body_latex = md_to_latex(md_text)
 fig1 = figure_block(
     "04_confusion_matrices_comparison.png",
     "Figure 1: Confusion matrices for TF-IDF + Logistic Regression (left) "
-    "and DistilBERT (right) on AG News test samples. "
-    "DistilBERT shows notably fewer Business/World confusions.",
+    "and DistilBERT (right) on HuffPost News Category Dataset test samples (Misra, 2022). "
+    "DistilBERT shows notably fewer cross-class confusions.",
     "fig:confusion",
 )
 body_latex = body_latex.replace(
@@ -194,9 +194,9 @@ body_latex = body_latex.replace(
 
 fig3 = figure_block(
     "01_class_distribution.png",
-    "Figure 3: AG News class distribution (train and test splits). "
-    "The balanced 25\\% per class eliminates class imbalance as a "
-    "confounding variable in the ML vs DL comparison.",
+    "Figure 3: HuffPost News Category Dataset class distribution (Misra, 2022) — "
+    "balanced 4-class subset of 20,000 samples (5,000 per class). "
+    "The balanced split eliminates class imbalance as a confounding variable.",
     "fig:classdist",
 )
 body_latex = body_latex.replace(
@@ -460,8 +460,8 @@ FIG3_MARKER = "##FIG_CLASSDIST##"
 
 FIG1_CAPTION = (
     "Figure 1: Confusion matrices for TF-IDF + Logistic Regression (left) "
-    "and DistilBERT (right) on AG News test samples. "
-    "DistilBERT shows notably fewer Business/World confusions."
+    "and DistilBERT (right) on HuffPost News Category Dataset test samples (Misra, 2022). "
+    "DistilBERT shows notably fewer cross-class confusions."
 )
 FIG2_CAPTION = (
     "Figure 2: Token-level attention weights from the final DistilBERT layer, "
@@ -470,9 +470,9 @@ FIG2_CAPTION = (
     "absent from bag-of-words representations."
 )
 FIG3_CAPTION = (
-    "Figure 3: AG News class distribution (train and test splits). "
-    "The balanced 25% per class eliminates class imbalance as a "
-    "confounding variable in the ML vs DL comparison."
+    "Figure 3: HuffPost News Category Dataset class distribution (Misra, 2022) - "
+    "balanced 4-class subset of 20,000 samples (5,000 per class). "
+    "The balanced split eliminates class imbalance as a confounding variable."
 )
 
 FIGURE_MAP = {

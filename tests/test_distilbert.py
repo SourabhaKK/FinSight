@@ -304,11 +304,23 @@ def test_integration_accuracy_on_real_artefact() -> None:
     if not os.path.exists(artefact):
         pytest.skip("artefact not found — run scripts/train_distilbert.py first")
 
+    import random
     from datasets import load_dataset
 
-    ds = load_dataset("ag_news")
-    test_texts: list[str] = ds["test"]["text"][:100]
-    test_labels: list[int] = ds["test"]["label"][:100]
+    _SELECTED = ["POLITICS", "BUSINESS", "ENTERTAINMENT", "WELLNESS"]
+    _LABEL_TO_INT = {"POLITICS": 0, "BUSINESS": 1, "ENTERTAINMENT": 2, "WELLNESS": 3}
+    raw = load_dataset("heegyu/news-category-dataset", split="train")
+    per: dict = {c: [] for c in _SELECTED}
+    for item in raw:
+        cat = item["category"]
+        if cat in per and len(per[cat]) < 25:
+            per[cat].append(item)
+    all_items = [i for items in per.values() for i in items]
+    random.shuffle(all_items)
+    test_texts: list[str] = [
+        (i["headline"] + " " + i["short_description"]).strip() for i in all_items
+    ]
+    test_labels: list[int] = [_LABEL_TO_INT[i["category"]] for i in all_items]
 
     clf = FinSightClassifier.load(artefact)
     metrics = clf.evaluate(test_texts, test_labels)

@@ -7,7 +7,6 @@ ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
 import numpy as np
-import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -16,32 +15,46 @@ from datasets import load_dataset
 PLOTS = ROOT / "notebooks" / "plots"
 PLOTS.mkdir(exist_ok=True)
 
-LABEL_NAMES = ["World", "Sports", "Business", "Sci/Tech"]
-LABEL_TO_INT = {"World": 0, "Sports": 1, "Business": 2, "Sci/Tech": 3}
+SELECTED_CATEGORIES = ["POLITICS", "BUSINESS", "ENTERTAINMENT", "WELLNESS"]
+LABEL_NAMES = ["Politics", "Business", "Entertainment", "Wellness"]
+LABEL_TO_INT = {
+    "POLITICS": 0, "BUSINESS": 1,
+    "ENTERTAINMENT": 2, "WELLNESS": 3,
+}
 
-print("Loading AG News dataset...")
-ds = load_dataset("ag_news")
-train_ds = ds["train"]
-test_ds  = ds["test"]
+import random
+from collections import Counter
+
+print("Loading HuffPost News Category Dataset (CC BY 4.0)...")
+print("Citation: Misra, R. (2022). arXiv:2209.11429")
+raw_ds = load_dataset("heegyu/news-category-dataset", split="train")
+
+N_PER_CLASS = 5_000
+random.seed(42)
+per_class: dict = {cat: [] for cat in SELECTED_CATEGORIES}
+for item in raw_ds:
+    cat = item["category"]
+    if cat in per_class and len(per_class[cat]) < N_PER_CLASS:
+        per_class[cat].append(item)
+
+all_items = [item for items in per_class.values() for item in items]
+random.shuffle(all_items)
+all_texts  = [(item["headline"] + " " + item["short_description"]).strip() for item in all_items]
+all_labels = [LABEL_TO_INT[item["category"]] for item in all_items]
 
 # ── Plot 1: Class distribution bar chart ──
 print("Generating plot 1: class distribution...")
-train_labels = train_ds["label"]
-test_labels  = test_ds["label"]
-train_counts = pd.Series(train_labels).value_counts().sort_index()
-test_counts  = pd.Series(test_labels).value_counts().sort_index()
+counts = Counter(all_labels)
 
 fig, ax = plt.subplots(figsize=(8, 4))
-x = np.arange(4)
-w = 0.35
-ax.bar(x - w/2, train_counts.values, w, label="Train", color="steelblue")
-ax.bar(x + w/2, test_counts.values,  w, label="Test",  color="coral")
-ax.set_xticks(x)
-ax.set_xticklabels(LABEL_NAMES, fontsize=11)
+ax.bar(LABEL_NAMES, [counts[i] for i in range(4)],
+       color=["#4C72B0", "#DD8452", "#55A868", "#C44E52"], alpha=0.8)
 ax.set_xlabel("Class", fontsize=11)
 ax.set_ylabel("Article count", fontsize=11)
-ax.set_title("AG News Class Distribution (Train vs Test)", fontsize=12)
-ax.legend(fontsize=10)
+ax.set_title("HuffPost News Category Distribution (balanced 4-class subset)", fontsize=12)
+ax.set_ylim(0, N_PER_CLASS * 1.15)
+for i, v in enumerate([counts[j] for j in range(4)]):
+    ax.text(i, v + 50, str(v), ha="center", va="bottom", fontsize=10)
 plt.tight_layout()
 plt.savefig(PLOTS / "01_class_distribution.png", bbox_inches="tight", dpi=150)
 plt.close()
@@ -50,10 +63,8 @@ print("  Saved: 01_class_distribution.png")
 # ── Plot 2: Article length boxplot ──
 print("Generating plot 2: article length distribution...")
 lengths_by_class = {name: [] for name in LABEL_NAMES}
-for item in train_ds:
-    lengths_by_class[LABEL_NAMES[item["label"]]].append(
-        len(item["text"].split())
-    )
+for text, label in zip(all_texts, all_labels):
+    lengths_by_class[LABEL_NAMES[label]].append(len(text.split()))
 
 fig, ax = plt.subplots(figsize=(8, 4))
 bp = ax.boxplot(
@@ -82,12 +93,9 @@ BASELINE_PATH = ROOT / "artefacts" / "baseline_pipeline.joblib"
 
 if BASELINE_PATH.exists():
     from sklearn.metrics import confusion_matrix, f1_score, accuracy_score
-    import random
-    random.seed(42)
-    test_items = list(test_ds)
-    sample = random.sample(test_items, 1000)
-    texts  = [item["text"] for item in sample]
-    labels = [item["label"] for item in sample]
+    sample_idx = random.sample(range(len(all_texts)), min(1000, len(all_texts)))
+    texts  = [all_texts[i] for i in sample_idx]
+    labels = [all_labels[i] for i in sample_idx]
 
     from src.models.baseline import BaselineClassifier
     clf = BaselineClassifier.load(str(BASELINE_PATH))
@@ -140,9 +148,9 @@ else:
 
     db_clf = FinSightClassifier.load(str(DB_PATH))
 
-    test_items = list(test_ds.select(range(500)))
-    texts  = [item["text"] for item in test_items]
-    labels = [item["label"] for item in test_items]
+    test_idx = list(range(min(500, len(all_texts))))
+    texts  = [all_texts[i] for i in test_idx]
+    labels = [all_labels[i] for i in test_idx]
 
     # Reload baseline for the side-by-side
     if BASELINE_PATH.exists():

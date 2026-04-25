@@ -93,7 +93,7 @@ finsight/
 │   └── train_distilbert.py        # Standalone training script
 ├── artefacts/                     # Saved model files — gitignored except .gitkeep
 │   └── .gitkeep
-├── data/                          # AG News subsets — gitignored except .gitkeep
+├── data/                          # Dataset cache — gitignored except .gitkeep
 │   └── .gitkeep
 ├── Dockerfile
 ├── docker-compose.yml
@@ -110,16 +110,31 @@ finsight/
 
 ## Dataset
 
-AG News corpus. Load using HuggingFace datasets:
+HuffPost News Category Dataset (CC BY 4.0).
+Author: Rishabh Misra. arXiv:2209.11429.
+Kaggle: https://www.kaggle.com/datasets/rmisra/news-category-dataset
+HuggingFace: heegyu/news-category-dataset
 
+Load using:
 ```python
 from datasets import load_dataset
-ds = load_dataset("ag_news")
-# Classes: 0=World, 1=Sports, 2=Business, 3=Sci/Tech
-# Train: 120,000 samples | Test: 7,600 samples
+ds = load_dataset("heegyu/news-category-dataset", split="train")
 ```
 
-For development use 5,000 train samples. For notebook training use 20,000. For full training via scripts/train_distilbert.py use all 120,000.
+The full dataset has 209,527 rows and 42 categories.
+FinSight uses a 4-class balanced subset of 20,000 samples:
+  0 = POLITICS       (5,000 samples)
+  1 = BUSINESS       (5,000 samples)
+  2 = ENTERTAINMENT  (5,000 samples)
+  3 = WELLNESS       (5,000 samples)
+
+Each row has: link, headline, category, short_description, authors, date.
+
+Input text = headline + " " + short_description (concatenated).
+
+For development use 2,000 train samples (500 per class).
+For notebook training use 16,000 train samples (4,000 per class)
+with 2,000 val (500 per class) and 2,000 test (500 per class).
 
 ---
 

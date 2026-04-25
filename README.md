@@ -93,7 +93,7 @@ curl -X POST http://localhost:8000/analyze \
 
 ## Model performance
 
-Results on AG News test set (4,000 samples). DistilBERT trained on 14,000 samples, 3 epochs on T4 GPU.
+Results on HuffPost News Category Dataset test set (Misra, 2022) — 4,000 samples across Politics, Business, Entertainment, and Wellness. DistilBERT fine-tuned on 16,000 samples, 3 epochs on T4 GPU.
 
 | Metric | TF-IDF + LogReg | DistilBERT (fine-tuned) |
 |---|---|---|
@@ -179,12 +179,23 @@ finsight/
 
 ## Dataset
 
-AG News — 120,000 news articles across 4 classes (World, Sports, Business, Sci/Tech). Loads automatically via HuggingFace `datasets`:
+HuffPost News Category Dataset (CC BY 4.0) — 209,527 articles across 42 categories published 2012–2022. FinSight uses a balanced 4-class subset of 20,000 samples:
+
+| Class | Label | Samples |
+|---|---|---|
+| POLITICS | 0 | 5,000 |
+| BUSINESS | 1 | 5,000 |
+| ENTERTAINMENT | 2 | 5,000 |
+| WELLNESS | 3 | 5,000 |
+
+Input text = `headline + " " + short_description`. Loads automatically via HuggingFace `datasets`:
 
 ```python
 from datasets import load_dataset
-ds = load_dataset("ag_news")
+ds = load_dataset("heegyu/news-category-dataset", split="train")
 ```
+
+Citation: Misra, R. (2022). News Category Dataset. arXiv:2209.11429. https://www.kaggle.com/datasets/rmisra/news-category-dataset
 
 ---
 
@@ -197,5 +208,5 @@ MIT
 ## Acknowledgements
 
 - DistilBERT — Sanh et al. (2019), [arXiv:1910.01108](https://arxiv.org/abs/1910.01108)
-- AG News dataset — Zhang et al. (2015), NeurIPS
+- HuffPost News Category Dataset — Misra, R. (2022), arXiv:2209.11429
 - CO2 tracking — [codecarbon](https://github.com/mlco2/codecarbon)
