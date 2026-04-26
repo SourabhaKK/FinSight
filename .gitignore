@@ -56,3 +56,9 @@ htmlcov/
 # Environment files (never commit real keys)
 .env
 .env.local
+
+# Assignment report files — kept locally for Tabula submission
+# Do not commit — academic integrity risk if public
+notebooks/WM9B7_reflection_draft.md
+notebooks/WM9B7_reflection_final.pdf
+notebooks/WM9B7_reflection_final.tex
