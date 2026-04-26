@@ -13,33 +13,33 @@ from src.models.baseline import BaselineClassifier
 # ---------------------------------------------------------------------------
 
 _CLASS_TEXTS: dict[int, list[str]] = {
-    0: [  # World
+    0: [  # Politics
         "world leaders met in geneva to discuss climate change and global policy",
         "united nations summit addressed international security concerns today",
         "european union foreign ministers convened for emergency trade talks",
         "nato alliance expanded membership to include new eastern european nations",
         "global pandemic response required coordinated international health efforts",
     ],
-    1: [  # Sports
-        "the football team won the championship after an exciting final match",
-        "olympic athletes broke multiple world records in swimming events",
-        "basketball playoffs featured intense competition between rival teams",
-        "tennis grand slam winner celebrated historic victory on centre court",
-        "soccer world cup final drew record television viewership worldwide",
-    ],
-    2: [  # Business
+    1: [  # Business
         "stock market rally pushed the dow jones to record highs on friday",
         "federal reserve raised interest rates to combat persistent inflation",
         "technology company reported quarterly earnings exceeding analyst forecasts",
         "merger acquisition deal valued at billions reshapes the banking sector",
         "oil prices surged following opec production cut announcement today",
     ],
-    3: [  # Sci/Tech
-        "nasa launched new space telescope to observe distant galaxies in detail",
-        "artificial intelligence model surpassed human performance on benchmark",
-        "quantum computing breakthrough enables faster cryptographic calculations",
-        "researchers developed novel gene therapy treating rare genetic disorders",
-        "electric vehicle battery technology improved range to five hundred miles",
+    2: [  # Entertainment
+        "the film won three academy awards including best picture of the year",
+        "pop star released new album that broke streaming records globally",
+        "television drama series finale drew the largest audience of the decade",
+        "celebrity couple announced engagement after two years of dating publicly",
+        "box office results showed record opening weekend for superhero sequel",
+    ],
+    3: [  # Wellness
+        "researchers found that mediterranean diet reduces heart disease risk significantly",
+        "new study links regular exercise to improved mental health outcomes",
+        "mindfulness meditation practice shown to lower cortisol levels in adults",
+        "nutritionists recommend increasing plant based foods for long term wellness",
+        "sleep quality improvements linked to better cognitive performance daily",
     ],
 }
 
@@ -123,7 +123,7 @@ def test_predict_confidence_in_range(fitted_classifier: BaselineClassifier) -> N
 
 
 def test_predict_label_is_valid_literal(fitted_classifier: BaselineClassifier) -> None:
-    valid_labels = {"World", "Sports", "Business", "Sci/Tech"}
+    valid_labels = {"Politics", "Business", "Entertainment", "Wellness"}
     x_test, _ = _make_dataset(n_per_class=5)
     results = fitted_classifier.predict(x_test)
     for r in results:

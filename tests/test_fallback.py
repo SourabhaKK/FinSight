@@ -41,13 +41,13 @@ def test_returns_risk_brief_instance() -> None:
 
 
 def test_generated_by_is_always_fallback() -> None:
-    for label in ["World", "Sports", "Business", "Sci/Tech"]:
+    for label in ["Politics", "Business", "Entertainment", "Wellness"]:
         result = generate_fallback(_ARTICLE, _clf(label))
         assert result.generated_by == "fallback"
 
 
 def test_risk_level_is_valid_literal() -> None:
-    for label in ["World", "Sports", "Business", "Sci/Tech"]:
+    for label in ["Politics", "Business", "Entertainment", "Wellness"]:
         result = generate_fallback(_ARTICLE, _clf(label))
         assert result.risk_level in _VALID_LEVELS
 
@@ -57,18 +57,18 @@ def test_business_high_confidence_gives_high_risk() -> None:
     assert result.risk_level == "high"
 
 
-def test_world_high_confidence_gives_medium_risk() -> None:
-    result = generate_fallback(_ARTICLE, _clf("World", confidence=0.90))
+def test_politics_high_confidence_gives_medium_risk() -> None:
+    result = generate_fallback(_ARTICLE, _clf("Politics", confidence=0.90))
     assert result.risk_level == "medium"
 
 
-def test_scitech_gives_low_risk() -> None:
-    result = generate_fallback(_ARTICLE, _clf("Sci/Tech", confidence=0.85))
+def test_entertainment_gives_low_risk() -> None:
+    result = generate_fallback(_ARTICLE, _clf("Entertainment", confidence=0.85))
     assert result.risk_level == "low"
 
 
-def test_sports_gives_low_risk() -> None:
-    result = generate_fallback(_ARTICLE, _clf("Sports", confidence=0.88))
+def test_wellness_gives_low_risk() -> None:
+    result = generate_fallback(_ARTICLE, _clf("Wellness", confidence=0.88))
     assert result.risk_level == "low"
 
 
@@ -83,7 +83,7 @@ def test_key_entities_length_lte_five() -> None:
 
 
 def test_key_entities_are_strings() -> None:
-    result = generate_fallback(_ARTICLE, _clf("World"))
+    result = generate_fallback(_ARTICLE, _clf("Politics"))
     assert all(isinstance(e, str) for e in result.key_entities)
 
 
@@ -93,12 +93,12 @@ def test_summary_contains_label() -> None:
 
 
 def test_summary_contains_confidence_percentage() -> None:
-    result = generate_fallback(_ARTICLE, _clf("World", confidence=0.80))
+    result = generate_fallback(_ARTICLE, _clf("Politics", confidence=0.80))
     assert "80%" in result.summary
 
 
 def test_recommended_action_is_non_empty() -> None:
-    for label in ["World", "Sports", "Business", "Sci/Tech"]:
+    for label in ["Politics", "Business", "Entertainment", "Wellness"]:
         result = generate_fallback(_ARTICLE, _clf(label))
         assert len(result.recommended_action) > 0
 
@@ -120,7 +120,7 @@ def test_passes_with_network_disabled() -> None:
         raise OSError("Network access blocked in test")
 
     with patch.object(socket, "getaddrinfo", side_effect=_no_network):
-        result = generate_fallback(_ARTICLE, _clf("Sci/Tech"))
+        result = generate_fallback(_ARTICLE, _clf("Entertainment"))
 
     assert isinstance(result, RiskBrief)
     assert result.generated_by == "fallback"

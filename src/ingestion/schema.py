@@ -11,7 +11,7 @@ class ArticleIn(BaseModel):
 
 
 class ClassificationResult(BaseModel):
-    label: Literal["World", "Sports", "Business", "Sci/Tech"]
+    label: Literal["Politics", "Business", "Entertainment", "Wellness"]
     confidence: float = Field(ge=0.0, le=1.0)
     model: Literal["distilbert", "baseline"]
 

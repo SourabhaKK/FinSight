@@ -135,7 +135,7 @@ def test_classify_confidence_in_range(full_client: TestClient) -> None:
 
 def test_classify_returns_valid_label(full_client: TestClient) -> None:
     label = full_client.post("/classify", json=_ARTICLE_PAYLOAD).json()["label"]
-    assert label in {"World", "Sports", "Business", "Sci/Tech"}
+    assert label in {"Politics", "Business", "Entertainment", "Wellness"}
 
 
 def test_classify_fallback_to_baseline_when_distilbert_none(

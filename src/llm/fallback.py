@@ -31,9 +31,9 @@ def _determine_risk_level(
         return "medium"
     if label == "Business" and confidence > 0.8:
         return "high"
-    if label == "World" and confidence > 0.8:
+    if label == "Politics" and confidence > 0.8:
         return "medium"
-    if label in {"Sci/Tech", "Sports"}:
+    if label in {"Entertainment", "Wellness"}:
         return "low"
     return "medium"
 

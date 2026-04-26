@@ -125,7 +125,7 @@ def test_predict_returns_classification_result(
 def test_predict_label_is_valid_literal(
     patched_classifier: FinSightClassifier,
 ) -> None:
-    valid = {"World", "Sports", "Business", "Sci/Tech"}
+    valid = {"Politics", "Business", "Entertainment", "Wellness"}
     result = patched_classifier.predict(_TEXTS[0])
     assert result.label in valid
 

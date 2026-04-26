@@ -73,13 +73,13 @@ def test_article_in_published_at_string_coercion() -> None:
 
 
 def test_classification_result_valid() -> None:
-    result = ClassificationResult(label="World", confidence=0.95, model="baseline")
-    assert result.label == "World"
+    result = ClassificationResult(label="Politics", confidence=0.95, model="baseline")
+    assert result.label == "Politics"
     assert result.confidence == 0.95
 
 
 def test_classification_result_all_labels() -> None:
-    for label in ["World", "Sports", "Business", "Sci/Tech"]:
+    for label in ["Politics", "Business", "Entertainment", "Wellness"]:
         result = ClassificationResult(label=label, confidence=0.5, model="baseline")
         assert result.label == label
 
@@ -91,27 +91,27 @@ def test_classification_result_invalid_label() -> None:
 
 def test_classification_result_confidence_out_of_range_high() -> None:
     with pytest.raises(ValidationError):
-        ClassificationResult(label="World", confidence=1.1, model="baseline")
+        ClassificationResult(label="Politics", confidence=1.1, model="baseline")
 
 
 def test_classification_result_confidence_out_of_range_low() -> None:
     with pytest.raises(ValidationError):
-        ClassificationResult(label="World", confidence=-0.1, model="baseline")
+        ClassificationResult(label="Politics", confidence=-0.1, model="baseline")
 
 
 def test_classification_result_confidence_boundary_zero() -> None:
-    result = ClassificationResult(label="Sports", confidence=0.0, model="distilbert")
+    result = ClassificationResult(label="Entertainment", confidence=0.0, model="distilbert")
     assert result.confidence == 0.0
 
 
 def test_classification_result_confidence_boundary_one() -> None:
-    result = ClassificationResult(label="Sports", confidence=1.0, model="distilbert")
+    result = ClassificationResult(label="Wellness", confidence=1.0, model="distilbert")
     assert result.confidence == 1.0
 
 
 def test_classification_result_invalid_model() -> None:
     with pytest.raises(ValidationError):
-        ClassificationResult(label="World", confidence=0.5, model="gpt4")
+        ClassificationResult(label="Politics", confidence=0.5, model="gpt4")
 
 
 # --- UrgencyResult ---
