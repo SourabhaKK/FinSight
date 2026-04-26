@@ -128,7 +128,7 @@ The case for DistilBERT in FinSight therefore rests on the structural argument a
 \textbf{Decision 1: Provider-agnostic LLM layer.}
 The \texttt{/analyze} endpoint generates a structured \texttt{RiskBrief} via an LLM client. A naive implementation would call a single provider's API directly. FinSight instead defines an abstract \texttt{LLMClient} base class with a factory function that resolves the concrete implementation from an environment variable at runtime, supporting Gemini 2.0 Flash, Groq (Llama 3.3 70B), and Ollama as interchangeable backends.
 
-The motivation is vendor risk. Gemini 2.0 Flash supports native structured output via \texttt{response\_schema}, which enforces JSON conformance at the API level. Groq requires prompt engineering to achieve the same result — the schema is injected into the system prompt as a JSON string, and output is parsed with \texttt{json.loads} followed by Pydantic validation. Ollama adds a third path for air-gapped deployments. The abstraction means that a production team can switch providers by changing a single environment variable, with no code changes and no re-deployment. The cost of this abstraction is a thin factory function and three client implementations; the benefit is zero-cost provider migration.
+The motivation is vendor risk. Gemini 2.0 Flash supports native structured output via \texttt{response\_schema}, which enforces JSON conformance at the API level. Groq requires prompt engineering to achieve the same result — the schema is injected into the system prompt as a JSON string, and output is parsed with \texttt{json.loads} followed by Pydantic validation. Ollama adds a third path for air-gapped deployments. The abstraction means that a production team can switch providers by changing a single environment variable, with no code changes and no re-deployment. The cost of this abstraction is a thin factory function; the benefit is zero-cost provider migration.
 
 \textbf{Decision 2: Three-tier fault tolerance.}
 The \texttt{RiskBriefGenerator} implements a layered retry strategy. Tier 1 handles transient failures with exponential backoff over three attempts (delays of 2, 4 seconds). Tier 2 detects HTTP 429 rate-limit errors and extends to five attempts with a doubled backoff schedule. Tier 3 catches any persistent failure and calls \texttt{generate\_fallback}, a deterministic function that produces a valid \texttt{RiskBrief} using only classification metadata and a simple rule-based logic table — no network calls, no randomness, guaranteed to succeed.
@@ -175,7 +175,7 @@ Lewis et al. (2020) formalised retrieval-augmented generation (RAG) as a framewo
 
 \subsubsection*{4.3 Agentic Systems and Adaptive Retraining}
 
-FinSight's drift detection engine currently operates in an observatory role: it computes PSI, KS, and chi-square statistics and emits alerts with a CLI exit code. The loop is open — a human must act on the alert. The emerging pattern of agentic ML systems (Bai et al., 2022) suggests a closed-loop architecture in which monitoring, retraining, and deployment are connected without human intervention in the nominal case.
+FinSight's drift detection engine currently operates in an observatory role: it computes PSI, KS, and chi-square statistics and emits alerts with a CLI exit code. The loop is open — a human must act on the alert. The emerging pattern of self-adapting production ML systems (Sculley et al., 2015) suggests a closed-loop architecture in which monitoring, retraining, and deployment are connected without human intervention in the nominal case.
 
 In a FinSight agentic extension, a CRITICAL PSI alert would trigger a retrieval of recent production samples, initiate a LoRA fine-tuning run on those samples, evaluate the updated model on a validation holdout, and promote it to the production endpoint if accuracy meets the threshold. The human remains in the loop for exceptional cases — a persistent CRITICAL status that the agentic retraining fails to resolve — but the nominal response to distribution shift is automated. This is the direction in which production ML systems are moving: treating models not as static artefacts but as continuously adapting components of a monitored service.
 
@@ -195,7 +195,7 @@ Finally, the convergence of LoRA, RAG, and agentic retraining suggests a near-te
 
 \subsection*{References}
 
-Bai, Y., Jones, A., Ndousse, K., Askell, A., Chen, A., DasSarma, N., ... \& Kaplan, J. (2022). Training a helpful and harmless assistant with reinforcement learning from human feedback. \textit{arXiv preprint arXiv:2204.05862}.
+Sculley, D., Holt, G., Golovin, D., Davydov, E., Phillips, T., Ebner, D., Chaudhary, V., Young, M., Crespo, J.-F., \& Dennison, D. (2015). Hidden technical debt in machine learning systems. In \textit{Advances in Neural Information Processing Systems 28} (pp. 2503--2511).
 
 Blodgett, S. L., Barocas, S., Daumé III, H., \& Wallach, H. (2020). Language (technology) is power: A critical survey of "bias" in NLP. In \textit{Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics} (pp. 5454–5476).
 
