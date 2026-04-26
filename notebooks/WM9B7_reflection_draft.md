@@ -18,7 +18,7 @@ This reflection examines three areas in which the implementation generated genui
 
 ### 2.1 Structural Limitations of Classical NLP
 
-The baseline classifier in FinSight uses TF-IDF vectorisation followed by multinomial logistic regression. TF-IDF encodes each document as a sparse vector of weighted term frequencies, where the weight of term $t$ in document $d$ reflects its local frequency penalised by its corpus-wide prevalence. This representation discards word order entirely and treats each token as an atomic symbol with no relationship to its neighbours.
+The baseline classifier in FinSight uses TF-IDF vectorisation followed by multinomial logistic regression. TF-IDF encodes each document as a sparse vector of weighted term frequencies, where the weight of term *t* in document *d* reflects its local frequency penalised by its corpus-wide prevalence. This representation discards word order entirely and treats each token as an atomic symbol with no relationship to its neighbours.
 
 For most benchmark classification tasks this is a surprisingly competitive choice. The HuffPost News Category Dataset subset used in FinSight contains four classes — Politics, Business, Entertainment, and Wellness — whose vocabularies overlap considerably more than topically clean benchmarks, making the bag-of-words representation moderately discriminative. The structural limitation becomes acute on financial text, where meaning is frequently constructed through negation, qualification, and inter-token dependency rather than vocabulary alone.
 

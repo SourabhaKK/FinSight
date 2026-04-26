@@ -165,6 +165,13 @@ def figure_block(img_name: str, caption: str, label: str) -> str:
 
 body_latex = md_to_latex(md_text)
 
+# Strip the level-1 title heading — the cover block already contains it.
+body_latex = re.sub(
+    r"\\section\*\{FinSight:[^\}]+\}\n*",
+    "",
+    body_latex,
+)
+
 fig1 = figure_block(
     "04_confusion_matrices_comparison.png",
     "Figure 1: Confusion matrices for TF-IDF + Logistic Regression (left) "
@@ -573,10 +580,11 @@ def parse_md_to_story(md: str) -> list:
             i += 1
             continue
 
-        # Headings
+        # Headings — skip the level-1 document title (cover block already has it)
         if line.startswith("# ") and not line.startswith("## "):
             flush_bullets(); flush_table()
-            story.append(Paragraph(rl_inline(line[2:].strip()), h1_style))
+            if not line[2:].strip().startswith("FinSight:"):
+                story.append(Paragraph(rl_inline(line[2:].strip()), h1_style))
             i += 1; continue
         if line.startswith("## ") and not line.startswith("### "):
             flush_bullets(); flush_table()
