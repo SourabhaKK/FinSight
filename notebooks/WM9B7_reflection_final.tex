@@ -49,6 +49,10 @@ for Financial News Risk Intelligence}\\[8pt]
 \noindent\rule{\linewidth}{0.8pt}
 \end{center}
 
+\section*{FinSight: A Critical Reflection on Deep Learning for Financial News Risk Intelligence}
+
+
+\noindent\rule{\linewidth}{0.4pt}
 
 \subsection*{1. Introduction}
 
@@ -62,9 +66,9 @@ This reflection examines three areas in which the implementation generated genui
 
 \subsubsection*{2.1 Structural Limitations of Classical NLP}
 
-The baseline classifier in FinSight uses TF-IDF vectorisation followed by multinomial logistic regression. TF-IDF encodes each document as a sparse vector of weighted term frequencies, where the weight of term \textit{t} in document \textit{d} reflects its local frequency penalised by its corpus-wide prevalence. This representation discards word order entirely and treats each token as an atomic symbol with no relationship to its neighbours.
+The baseline classifier in FinSight uses TF-IDF vectorisation followed by multinomial logistic regression. TF-IDF encodes each document as a sparse vector of weighted term frequencies, where the weight of term \$t\$ in document \$d\$ reflects its local frequency penalised by its corpus-wide prevalence. This representation discards word order entirely and treats each token as an atomic symbol with no relationship to its neighbours.
 
-For most benchmark classification tasks this is a surprisingly competitive choice. The AG News corpus contains four topically distinct classes — World, Sports, Business, and Sci/Tech — whose vocabularies overlap relatively little, making the bag-of-words representation reasonably discriminative. The structural limitation becomes acute on financial text, where meaning is frequently constructed through negation, qualification, and inter-token dependency rather than vocabulary alone.
+For most benchmark classification tasks this is a surprisingly competitive choice. The HuffPost News Category Dataset subset used in FinSight contains four classes — Politics, Business, Entertainment, and Wellness — whose vocabularies overlap considerably more than topically clean benchmarks, making the bag-of-words representation moderately discriminative. The structural limitation becomes acute on financial text, where meaning is frequently constructed through negation, qualification, and inter-token dependency rather than vocabulary alone.
 
 Consider two hypothetical financial headlines:
 
@@ -90,7 +94,7 @@ The self-attention mechanism enables DistilBERT to model the dependency between 
 \end{figure}
 \subsubsection*{2.3 Empirical Comparison}
 
-The following metrics were obtained by evaluating both models on the AG News test set (Zhang et al., 2015) — 4,000 samples for both models — after fine-tuning on 20,000 training samples.
+The following metrics were obtained by evaluating both models on a 4-class subset of the HuffPost News Category Dataset (Misra, 2022) — 4,000 test samples across Politics, Business, Entertainment, and Wellness — after fine-tuning on 16,000 training samples. The dataset contains 209,527 HuffPost articles published between 2012 and 2022 and is released under CC BY 4.0.
 
 \begin{center}
 \begin{tabular}{lll}\hline
@@ -109,14 +113,14 @@ The accuracy gap of 2.9 percentage points is statistically meaningful at this sa
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.95\textwidth]{C:/Users/Asus/Desktop/AIDL Solo Assignment/FinSight/notebooks/plots/04_confusion_matrices_comparison.png}
-\caption{Figure 1: Confusion matrices for TF-IDF + Logistic Regression (left) and DistilBERT (right) on AG News test samples. DistilBERT shows notably fewer Business/World confusions.}
+\caption{Figure 1: Confusion matrices for TF-IDF + Logistic Regression (left) and DistilBERT (right) on HuffPost News Category Dataset test samples (Misra, 2022). DistilBERT shows notably fewer cross-class confusions.}
 \label{fig:confusion}
 \end{figure}
 \subsubsection*{2.4 Justification for Deep Learning in This Project}
 
-The AG News benchmark is topically clean: the four classes are well-separated in vocabulary space, which partially masks the structural advantage of contextual embeddings. A financial-domain corpus — Reuters financial news, SEC filings, or earnings call transcripts — would expose the performance gap more dramatically, because financial language is densely idiomatic, uses the same terms in different risk registers, and relies heavily on negation and hedging.
+The HuffPost News Category Dataset subset presents a more challenging classification task than topically clean benchmarks: Politics and Business articles frequently share economic and governmental vocabulary, while Entertainment articles discussing celebrity business ventures create genuine boundary ambiguity. This vocabulary overlap means the structural advantage of contextual embeddings is more pronounced than on cleaner benchmarks.
 
-The case for DistilBERT in FinSight therefore rests on the structural argument as much as on the empirical result. The observed improvement of 4.1 points is a lower bound on the real-world benefit; on domain-specific financial text, the gap would be substantially larger. Using the baseline in production would be a deliberate choice to optimise for speed at the cost of accuracy on precisely the ambiguous articles that matter most for risk detection.
+The case for DistilBERT in FinSight therefore rests on the structural argument as much as on the empirical result. The observed improvement of 2.9 percentage points is a lower bound on the real-world benefit; on domain-specific financial text, the gap would be substantially larger. Using the baseline in production would be a deliberate choice to optimise for speed at the cost of accuracy on precisely the ambiguous articles that matter most for risk detection.
 
 \noindent\rule{\linewidth}{0.4pt}
 
@@ -132,15 +136,15 @@ The motivation is vendor risk. Gemini 2.0 Flash supports native structured outpu
 \textbf{Decision 2: Three-tier fault tolerance.}
 The \texttt{RiskBriefGenerator} implements a layered retry strategy. Tier 1 handles transient failures with exponential backoff over three attempts (delays of 2, 4 seconds). Tier 2 detects HTTP 429 rate-limit errors and extends to five attempts with a doubled backoff schedule. Tier 3 catches any persistent failure and calls \texttt{generate\_fallback}, a deterministic function that produces a valid \texttt{RiskBrief} using only classification metadata and a simple rule-based logic table — no network calls, no randomness, guaranteed to succeed.
 
-This design reflects a fundamental requirement of financial systems: an analyst must never receive an unhandled error when processing time-sensitive news. A 500 response at 9:31 on a market open day is operationally unacceptable. The fallback's \texttt{generated\_by="fallback"} provenance field ensures that the source of the brief is always traceable, allowing downstream consumers to apply appropriate skepticism to rule-generated vs LLM-generated outputs.
+This design reflects a fundamental requirement of financial systems: an analyst must never receive an unhandled error when processing time-sensitive news. The fallback's \texttt{generated\_by="fallback"} provenance field ensures that the source of the brief is always traceable, allowing downstream consumers to apply appropriate skepticism to rule-generated vs LLM-generated outputs.
 
 \textbf{Decision 3: Early stopping with best-weight restoration.}
-The DistilBERT training loop monitors validation loss after every epoch and saves a checkpoint only when validation loss improves. After two consecutive epochs without improvement (patience = 2), training halts and the best weights are restored. On a 20,000-sample fine-tuning dataset, DistilBERT can begin to overfit to AG News vocabulary idiosyncrasies within three to four epochs. Early stopping prevents this without requiring manual epoch selection, and the automatic checkpoint saves the model at its generalisation peak rather than at the end of training.
+The DistilBERT training loop monitors validation loss after every epoch and saves a checkpoint only when validation loss improves. After two consecutive epochs without improvement (patience = 2), training halts and the best weights are restored. On a 20,000-sample fine-tuning dataset, DistilBERT can begin to overfit to the training vocabulary within three to four epochs. Early stopping prevents this without requiring manual epoch selection, and the automatic checkpoint saves the model at its generalisation peak rather than at the end of training.
 
 \subsubsection*{3.2 Societal and Ethical Implications}
 
 \textbf{Algorithmic bias in financial news routing.}
-FinSight's classifier was trained on AG News, a corpus of English-language news predominantly sourced from Western financial and general press outlets. Blodgett et al. (2020) demonstrate that NLP systems trained on majority-register corpora systematically underperform on text from minority registers — different writing styles, dialects, or structural conventions. In the financial domain, this translates to a measurable risk: articles from regional financial press in non-English-speaking markets, or from outlets that do not write in the dominant register of the training corpus, may be systematically misclassified. A risk intelligence system that reliably classifies Bloomberg and Reuters articles but fails on El Economista or Caixin would produce a structurally biased view of global market risk, disadvantaging analysts and ultimately the markets of those regions.
+FinSight's classifier was trained on the HuffPost News Category Dataset (Misra, 2022), a corpus of English-language news articles predominantly sourced from a single US-based digital media outlet. Blodgett et al. (2020) demonstrate that NLP systems trained on majority-register corpora systematically underperform on text from minority registers — different writing styles, dialects, or structural conventions. In the financial domain, this translates to a measurable risk: articles from regional financial press in non-English-speaking markets, or from outlets that do not write in the dominant register of the training corpus, may be systematically misclassified. A risk intelligence system that reliably classifies Bloomberg and Reuters articles but fails on El Economista or Caixin would produce a structurally biased view of global market risk, disadvantaging analysts and ultimately the markets of those regions.
 
 The mitigation available at this stage of the project is transparency: the model card should document the training corpus, its geographic and linguistic composition, and the expected performance degradation on out-of-distribution text. A production deployment would require evaluation against a geographically stratified holdout — sampling equally from AP, Reuters, Al Jazeera English, and Xinhua financial wire services, for example — and reweighting the training corpus or applying domain adaptation where systematic performance gaps are found. Critically, FinSight's drift detection engine provides the infrastructure for the latter: a persistent drop in classification confidence on articles from a specific source cluster would surface as a distributional shift in the PSI monitor, triggering targeted retraining on that subpopulation rather than a full pipeline retrain.
 
@@ -182,9 +186,9 @@ In a FinSight agentic extension, a CRITICAL PSI alert would trigger a retrieval 
 
 \subsection*{5. Conclusion}
 
-FinSight demonstrates that the choice between classical ML and deep learning is not a question of which approach is superior in the abstract, but which trade-off profile matches the deployment requirements. TF-IDF logistic regression achieves 89.9\% accuracy on AG News at 1.54 ms inference; DistilBERT achieves 92.7\% at 11.64 ms on GPU (approximately 150 ms on CPU). The structural argument for contextual embeddings is compelling for financial text, where negation and hedging carry risk-critical information that bag-of-words representations systematically lose.
+FinSight demonstrates that the choice between classical ML and deep learning is not a question of which approach is superior in the abstract, but which trade-off profile matches the deployment requirements. TF-IDF logistic regression achieves 89.9\% accuracy on the HuffPost test set at 1.54 ms inference; DistilBERT achieves 92.7\% at 11.64 ms on GPU (approximately 150 ms on CPU). The structural argument for contextual embeddings is compelling for financial text, where negation and hedging carry risk-critical information that bag-of-words representations systematically lose.
 
-The system's design decisions — provider-agnostic LLM abstraction, three-tier fault tolerance, and early stopping — each reflect a tension that a purely academic implementation would not encounter: vendor risk, operational availability requirements, and the generalisation ceiling of a small fine-tuning dataset. These constraints forced architectural choices that deepened the engineering understanding in ways that a notebook experiment on AG News accuracy alone would not.
+The system's design decisions — provider-agnostic LLM abstraction, three-tier fault tolerance, and early stopping — each reflect a tension that a purely academic implementation would not encounter: vendor risk, operational availability requirements, and the generalisation ceiling of a small fine-tuning dataset. These constraints forced architectural choices that deepened the engineering understanding in ways that a notebook experiment on a single benchmark's accuracy alone would not.
 
 The societal implications — bias toward majority-register training corpora, LLM hallucination in financial advice, and the environmental cost of large model training — are not edge concerns. They are central to the responsible deployment of any AI system that influences financial decisions, and they require explicit design responses rather than post-hoc disclaimers.
 
@@ -210,7 +214,7 @@ Sanh, V., Debut, L., Chaumond, J., \& Wolf, T. (2019). DistilBERT, a distilled v
 
 Strubell, E., Ganesh, A., \& McCallum, A. (2019). Energy and policy considerations for deep learning in NLP. In \textit{Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics} (pp. 3645–3650).
 
-Zhang, X., Zhao, J., \& LeCun, Y. (2015). Character-level convolutional networks for text classification. In \textit{Advances in Neural Information Processing Systems 28} (pp. 649–657).
+Misra, R. (2022). News Category Dataset. \textit{arXiv preprint arXiv:2209.11429}. https://www.kaggle.com/datasets/rmisra/news-category-dataset
 
 
 \end{document}

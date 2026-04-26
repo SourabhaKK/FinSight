@@ -2,7 +2,7 @@
 
 **Student:** Sourabha K Kallapur
 **Module:** WMG9B7 — Artificial Intelligence and Deep Learning
-**Word count:** 2776
+**Word count:** 2792
 
 ---
 
@@ -53,9 +53,9 @@ The accuracy gap of 2.9 percentage points is statistically meaningful at this sa
 
 ### 2.4 Justification for Deep Learning in This Project
 
-The HuffPost News Category Dataset subset is topically diverse: the four classes — Politics, Business, Entertainment, and Wellness — share considerable surface-level vocabulary, making the classification task harder than comparable benchmarks and reducing the degree to which bag-of-words representations are discriminative. A financial-domain corpus — Reuters financial news, SEC filings, or earnings call transcripts — would expose the performance gap more dramatically, because financial language is densely idiomatic, uses the same terms in different risk registers, and relies heavily on negation and hedging.
+The HuffPost News Category Dataset subset presents a more challenging classification task than topically clean benchmarks: Politics and Business articles frequently share economic and governmental vocabulary, while Entertainment articles discussing celebrity business ventures create genuine boundary ambiguity. This vocabulary overlap means the structural advantage of contextual embeddings is more pronounced than on cleaner benchmarks.
 
-The case for DistilBERT in FinSight therefore rests on the structural argument as much as on the empirical result. The observed improvement of 4.1 points is a lower bound on the real-world benefit; on domain-specific financial text, the gap would be substantially larger. Using the baseline in production would be a deliberate choice to optimise for speed at the cost of accuracy on precisely the ambiguous articles that matter most for risk detection.
+The case for DistilBERT in FinSight therefore rests on the structural argument as much as on the empirical result. The observed improvement of 2.9 percentage points is a lower bound on the real-world benefit; on domain-specific financial text, the gap would be substantially larger. Using the baseline in production would be a deliberate choice to optimise for speed at the cost of accuracy on precisely the ambiguous articles that matter most for risk detection.
 
 ---
 
@@ -71,7 +71,7 @@ The motivation is vendor risk. Gemini 2.0 Flash supports native structured outpu
 **Decision 2: Three-tier fault tolerance.**
 The `RiskBriefGenerator` implements a layered retry strategy. Tier 1 handles transient failures with exponential backoff over three attempts (delays of 2, 4 seconds). Tier 2 detects HTTP 429 rate-limit errors and extends to five attempts with a doubled backoff schedule. Tier 3 catches any persistent failure and calls `generate_fallback`, a deterministic function that produces a valid `RiskBrief` using only classification metadata and a simple rule-based logic table — no network calls, no randomness, guaranteed to succeed.
 
-This design reflects a fundamental requirement of financial systems: an analyst must never receive an unhandled error when processing time-sensitive news. A 500 response at 9:31 on a market open day is operationally unacceptable. The fallback's `generated_by="fallback"` provenance field ensures that the source of the brief is always traceable, allowing downstream consumers to apply appropriate skepticism to rule-generated vs LLM-generated outputs.
+This design reflects a fundamental requirement of financial systems: an analyst must never receive an unhandled error when processing time-sensitive news. The fallback's `generated_by="fallback"` provenance field ensures that the source of the brief is always traceable, allowing downstream consumers to apply appropriate skepticism to rule-generated vs LLM-generated outputs.
 
 **Decision 3: Early stopping with best-weight restoration.**
 The DistilBERT training loop monitors validation loss after every epoch and saves a checkpoint only when validation loss improves. After two consecutive epochs without improvement (patience = 2), training halts and the best weights are restored. On a 20,000-sample fine-tuning dataset, DistilBERT can begin to overfit to the training vocabulary within three to four epochs. Early stopping prevents this without requiring manual epoch selection, and the automatic checkpoint saves the model at its generalisation peak rather than at the end of training.
