@@ -445,8 +445,25 @@ def make_figure(img_name: str, caption: str, max_width_cm: float = 14.5) -> list
     p = PLOTS / img_name
     if not p.exists():
         return [Paragraph(f"[Figure not found: {img_name}]", caption_style)]
+    # Convert RGBA → RGB (white background) so reportlab embeds a single
+    # uncompressed RGB stream instead of splitting into RGB + alpha streams.
+    # This produces a larger, more compatible PDF.
+    from PIL import Image as PILImage
+    import io
+    pil = PILImage.open(p)
+    if pil.mode in ("RGBA", "LA", "P"):
+        bg = PILImage.new("RGB", pil.size, (255, 255, 255))
+        if pil.mode == "P":
+            pil = pil.convert("RGBA")
+        bg.paste(pil, mask=pil.split()[-1] if pil.mode in ("RGBA", "LA") else None)
+        pil = bg
+    elif pil.mode != "RGB":
+        pil = pil.convert("RGB")
+    buf = io.BytesIO()
+    pil.save(buf, format="JPEG", quality=95, subsampling=0)
+    buf.seek(0)
     max_w = max_width_cm * cm
-    img = Image(str(p))
+    img = Image(buf)
     aspect = img.imageHeight / img.imageWidth
     img.drawWidth  = min(max_w, img.imageWidth)
     img.drawHeight = img.drawWidth * aspect
