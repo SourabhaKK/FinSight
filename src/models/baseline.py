@@ -8,10 +8,10 @@ from sklearn.pipeline import Pipeline
 from src.ingestion.schema import ClassificationResult
 
 _LABEL_MAP: dict[int, str] = {
-    0: "World",
-    1: "Sports",
-    2: "Business",
-    3: "Sci/Tech",
+    0: "Politics",
+    1: "Business",
+    2: "Entertainment",
+    3: "Wellness",
 }
 
 

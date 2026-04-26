@@ -57,10 +57,10 @@ class FinSightClassifier:
     MODEL_NAME: str = "distilbert-base-uncased"
     NUM_LABELS: int = 4
     LABEL_MAP: dict[int, str] = {
-        0: "World",
-        1: "Sports",
-        2: "Business",
-        3: "Sci/Tech",
+        0: "Politics",
+        1: "Business",
+        2: "Entertainment",
+        3: "Wellness",
     }
 
     def __init__(self, model_path: str | None = None) -> None:
