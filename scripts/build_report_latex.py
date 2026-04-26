@@ -168,8 +168,10 @@ body_latex = md_to_latex(md_text)
 fig1 = figure_block(
     "04_confusion_matrices_comparison.png",
     "Figure 1: Confusion matrices for TF-IDF + Logistic Regression (left) "
-    "and DistilBERT (right) on HuffPost News Category Dataset test samples (Misra, 2022). "
-    "DistilBERT shows notably fewer cross-class confusions.",
+    "and DistilBERT (right) on the HuffPost News Category Dataset test set "
+    "(4,000 samples, Misra 2022). DistilBERT shows notably fewer "
+    "Business/Wellness confusions, with Business macro-F1 improving from "
+    "0.8066 to 0.8817.",
     "fig:confusion",
 )
 body_latex = body_latex.replace(
@@ -194,9 +196,10 @@ body_latex = body_latex.replace(
 
 fig3 = figure_block(
     "01_class_distribution.png",
-    "Figure 3: HuffPost News Category Dataset class distribution (Misra, 2022) — "
-    "balanced 4-class subset of 20,000 samples (5,000 per class). "
-    "The balanced split eliminates class imbalance as a confounding variable.",
+    "Figure 3: HuffPost News Category Dataset --- balanced 4-class subset "
+    "(5,000 samples per class across Politics, Business, Entertainment, and Wellness). "
+    "Equal class distribution eliminates class imbalance as a confounding "
+    "variable in the ML vs DL comparison (Misra, 2022).",
     "fig:classdist",
 )
 body_latex = body_latex.replace(
@@ -247,7 +250,7 @@ tex_doc = (
     r"for Financial News Risk Intelligence}\\[8pt]" + "\n"
     r"{\normalsize Student: Sourabha K Kallapur}\\" + "\n"
     r"{\normalsize Module: WMG9B7 --- Artificial Intelligence and Deep Learning}\\" + "\n"
-    r"{\normalsize Word count: 2703 (excluding references)}\\[6pt]" + "\n"
+    r"{\normalsize Word count: 2797 (excluding references)}\\[6pt]" + "\n"
     r"\noindent\rule{\linewidth}{0.8pt}" + "\n"
     r"\end{center}" + "\n\n"
     + body_latex + "\n\n"
@@ -460,8 +463,10 @@ FIG3_MARKER = "##FIG_CLASSDIST##"
 
 FIG1_CAPTION = (
     "Figure 1: Confusion matrices for TF-IDF + Logistic Regression (left) "
-    "and DistilBERT (right) on HuffPost News Category Dataset test samples (Misra, 2022). "
-    "DistilBERT shows notably fewer cross-class confusions."
+    "and DistilBERT (right) on the HuffPost News Category Dataset test set "
+    "(4,000 samples, Misra 2022). DistilBERT shows notably fewer "
+    "Business/Wellness confusions, with Business macro-F1 improving from "
+    "0.8066 to 0.8817."
 )
 FIG2_CAPTION = (
     "Figure 2: Token-level attention weights from the final DistilBERT layer, "
@@ -470,9 +475,10 @@ FIG2_CAPTION = (
     "absent from bag-of-words representations."
 )
 FIG3_CAPTION = (
-    "Figure 3: HuffPost News Category Dataset class distribution (Misra, 2022) - "
-    "balanced 4-class subset of 20,000 samples (5,000 per class). "
-    "The balanced split eliminates class imbalance as a confounding variable."
+    "Figure 3: HuffPost News Category Dataset --- balanced 4-class subset "
+    "(5,000 samples per class across Politics, Business, Entertainment, and Wellness). "
+    "Equal class distribution eliminates class imbalance as a confounding "
+    "variable in the ML vs DL comparison (Misra, 2022)."
 )
 
 FIGURE_MAP = {
@@ -682,7 +688,7 @@ story.append(Paragraph(
     "Module: WMG9B7 \u2014 Artificial Intelligence and Deep Learning",
     meta_style,
 ))
-story.append(Paragraph("Word count: 2703 (excluding references)", meta_style))
+story.append(Paragraph("Word count: 2797 (excluding references)", meta_style))
 story.append(Spacer(1, 4))
 story.append(HRFlowable(width="100%", thickness=1.0, color=colors.HexColor("#3B4A6B"),
                          spaceAfter=10))

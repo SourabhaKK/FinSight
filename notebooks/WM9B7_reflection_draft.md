@@ -2,7 +2,7 @@
 
 **Student:** Sourabha K Kallapur
 **Module:** WMG9B7 — Artificial Intelligence and Deep Learning
-**Word count:** 2792
+**Word count:** 2797
 
 ---
 
@@ -39,23 +39,23 @@ The self-attention mechanism enables DistilBERT to model the dependency between 
 
 ### 2.3 Empirical Comparison
 
-The following metrics were obtained by evaluating both models on a 4-class subset of the HuffPost News Category Dataset (Misra, 2022) — 4,000 test samples across Politics, Business, Entertainment, and Wellness — after fine-tuning on 16,000 training samples. The dataset contains 209,527 HuffPost articles published between 2012 and 2022 and is released under CC BY 4.0.
+The following metrics were obtained by evaluating both models on the HuffPost News Category Dataset (Misra, 2022) — 4,000 test samples (1,000 per class) across Politics, Business, Entertainment, and Wellness — after fine-tuning on 14,000 training samples from a balanced 20,000-sample subset. The dataset is openly licensed under CC BY 4.0.
 
-| Metric             | TF-IDF + LogReg | DistilBERT   |
-|--------------------|-----------------|--------------|
-| Accuracy           | 0.8985          | 0.9273                         |
-| Macro-F1           | 0.8980          | 0.9269                         |
-| Inference p50      | 1.54 ms         | 11.64 ms (GPU) / ~150 ms (CPU) |
-| Training time      | < 5 s           | ~8 min (GPU) / ~3 hr (CPU)     |
-| CO2 emitted (kg)   | ~0.000001       | 0.007699                       |
+| Metric             | TF-IDF + LogReg        | DistilBERT                      |
+|--------------------|------------------------|---------------------------------|
+| Accuracy           | 0.8658                 | 0.9237                          |
+| Macro-F1           | 0.8653                 | 0.9234                          |
+| Inference p50      | 3.72 ms                | 8.54 ms (GPU) / ~150 ms (CPU)   |
+| Training time      | < 5 s                  | ~45 min (GPU) / ~3 hr (CPU)     |
+| CO2 emitted (kg)   | ~0.000001              | 0.007501                        |
 
-The accuracy gap of 2.9 percentage points is statistically meaningful at this sample size, but it does not resolve the architectural choice unambiguously. For a batch-processing risk analytics workflow that executes overnight, the 150 ms inference latency per article is entirely acceptable and DistilBERT is the correct choice. For a real-time trading system that must classify an article within 10 ms of publication, the baseline is preferable. The decision depends on the deployment context, not on which number is larger.
+The accuracy gap of 5.8 percentage points is statistically meaningful at this sample size, and notably larger than on topically clean benchmarks — a consequence of the vocabulary overlap between Politics/Business and Entertainment/Wellness classes. For a batch-processing risk analytics workflow that executes overnight, the 150 ms inference latency per article is entirely acceptable and DistilBERT is the correct choice. For a real-time trading system that must classify an article within 10 ms of publication, the baseline is preferable. The decision depends on the deployment context, not on which number is larger.
 
 ### 2.4 Justification for Deep Learning in This Project
 
 The HuffPost News Category Dataset subset presents a more challenging classification task than topically clean benchmarks: Politics and Business articles frequently share economic and governmental vocabulary, while Entertainment articles discussing celebrity business ventures create genuine boundary ambiguity. This vocabulary overlap means the structural advantage of contextual embeddings is more pronounced than on cleaner benchmarks.
 
-The case for DistilBERT in FinSight therefore rests on the structural argument as much as on the empirical result. The observed improvement of 2.9 percentage points is a lower bound on the real-world benefit; on domain-specific financial text, the gap would be substantially larger. Using the baseline in production would be a deliberate choice to optimise for speed at the cost of accuracy on precisely the ambiguous articles that matter most for risk detection.
+The case for DistilBERT in FinSight therefore rests on the structural argument as much as on the empirical result. The observed improvement of 5.8 percentage points is a lower bound on the real-world benefit; on domain-specific financial text, the gap would be larger still. Using the baseline in production would be a deliberate choice to optimise for speed at the cost of accuracy on precisely the ambiguous articles that matter most for risk detection.
 
 ---
 
@@ -89,7 +89,7 @@ The `/analyze` endpoint returns a `RiskBrief` containing `risk_level` and `recom
 Two mitigations are baked into the implementation. First, `temperature=0.0` is set on all LLM calls, eliminating sampling randomness and producing deterministic outputs for identical inputs. Second, Pydantic schema validation at the response parsing stage ensures that structurally invalid outputs — wrong field types, out-of-vocabulary `risk_level` values — are rejected before reaching the caller. These mitigations reduce the probability of structural errors but cannot eliminate factual hallucination. Human review remains necessary for any LLM-generated output used in an investment decision.
 
 **Environmental cost of fine-tuning.**
-The emissions.csv tracking file recorded 0.007699 kg CO2 (approximately 7.7 grams) across the three training epochs. Strubell et al. (2019) contextualised the environmental cost of NLP model training, showing that training a single BERT model from scratch emits approximately 652 kg CO2e — more than a transatlantic flight. FinSight's footprint is several orders of magnitude smaller because fine-tuning reuses pre-trained weights. The measurement and reporting of training emissions via codecarbon is itself a contribution to responsible AI practice: it makes the cost visible, which is the precondition for managing it.
+The emissions.csv tracking file recorded 0.007501 kg CO2 (approximately 7.5 grams) across the three training epochs. Strubell et al. (2019) contextualised the environmental cost of NLP model training, showing that training a single BERT model from scratch emits approximately 652 kg CO2e — more than a transatlantic flight. FinSight's footprint is several orders of magnitude smaller because fine-tuning reuses pre-trained weights. The measurement and reporting of training emissions via codecarbon is itself a contribution to responsible AI practice: it makes the cost visible, which is the precondition for managing it.
 
 ### 3.3 Use of AI Assistance
 
@@ -121,7 +121,7 @@ In a FinSight agentic extension, a CRITICAL PSI alert would trigger a retrieval 
 
 ## 5. Conclusion
 
-FinSight demonstrates that the choice between classical ML and deep learning is not a question of which approach is superior in the abstract, but which trade-off profile matches the deployment requirements. TF-IDF logistic regression achieves 89.9% accuracy on the HuffPost test set at 1.54 ms inference; DistilBERT achieves 92.7% at 11.64 ms on GPU (approximately 150 ms on CPU). The structural argument for contextual embeddings is compelling for financial text, where negation and hedging carry risk-critical information that bag-of-words representations systematically lose.
+FinSight demonstrates that the choice between classical ML and deep learning is not a question of which approach is superior in the abstract, but which trade-off profile matches the deployment requirements. TF-IDF logistic regression achieves 86.6% accuracy on the HuffPost News Category Dataset (Misra, 2022) at 3.72 ms inference; DistilBERT achieves 92.4% at 8.54 ms on GPU (approximately 150 ms on CPU). The structural argument for contextual embeddings is compelling for financial text, where negation and hedging carry risk-critical information that bag-of-words representations systematically lose.
 
 The system's design decisions — provider-agnostic LLM abstraction, three-tier fault tolerance, and early stopping — each reflect a tension that a purely academic implementation would not encounter: vendor risk, operational availability requirements, and the generalisation ceiling of a small fine-tuning dataset. These constraints forced architectural choices that deepened the engineering understanding in ways that a notebook experiment on a single benchmark's accuracy alone would not.
 
