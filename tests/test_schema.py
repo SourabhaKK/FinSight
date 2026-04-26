@@ -100,7 +100,9 @@ def test_classification_result_confidence_out_of_range_low() -> None:
 
 
 def test_classification_result_confidence_boundary_zero() -> None:
-    result = ClassificationResult(label="Entertainment", confidence=0.0, model="distilbert")
+    result = ClassificationResult(
+        label="Entertainment", confidence=0.0, model="distilbert"
+    )
     assert result.confidence == 0.0
 
 

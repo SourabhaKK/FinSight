@@ -35,7 +35,7 @@ _CLASS_TEXTS: dict[int, list[str]] = {
         "box office results showed record opening weekend for superhero sequel",
     ],
     3: [  # Wellness
-        "researchers found that mediterranean diet reduces heart disease risk significantly",
+        "researchers found mediterranean diet reduces heart disease risk significantly",
         "new study links regular exercise to improved mental health outcomes",
         "mindfulness meditation practice shown to lower cortisol levels in adults",
         "nutritionists recommend increasing plant based foods for long term wellness",
