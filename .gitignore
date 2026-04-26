@@ -65,3 +65,9 @@ notebooks/WM9B7_reflection_final.tex
 
 # Notebook generator — deleted, do not recreate
 scripts/gen_notebook.py
+
+# One-time migration scripts (purpose complete)
+_nb_dataset_swap.py
+
+# Pyright config (project uses mypy)
+pyrightconfig.json
