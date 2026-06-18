@@ -17,7 +17,7 @@
   "seed": 42,
   "accuracy": 0.9235,
   "macro_f1": 0.9237389053269522,
-  "training_date": "2026-06-18T01:50:10.273771+00:00",
+  "training_date": "2026-06-18T03:07:16.477747+00:00",
   "sklearn_version": "1.9.0",
   "torch_version": "2.5.1+cu121",
   "transformers_version": "5.12.1"
