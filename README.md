@@ -128,7 +128,7 @@ Use the TF-IDF baseline for latency-critical applications. Use DistilBERT for ac
 Experiments are tracked with MLflow. To view the experiment UI after a training run:
 
 ```bash
-mlflow ui --backend-store-uri mlruns
+mlflow ui --backend-store-uri sqlite:///mlflow.db
 ```
 
 Then open http://localhost:5000 to compare runs across:

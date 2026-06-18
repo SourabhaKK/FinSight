@@ -32,7 +32,7 @@ SEED = 42
 
 
 def main() -> None:
-    mlflow.set_tracking_uri("mlruns")
+    mlflow.set_tracking_uri("sqlite:///mlflow.db")
     mlflow.set_experiment("finsight")
 
     device_name = (

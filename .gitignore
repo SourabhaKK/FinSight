@@ -51,6 +51,7 @@ htmlcov/
 
 # MLflow local tracking data (not committed)
 mlruns/
+mlflow.db
 
 # MyPy
 .mypy_cache/
