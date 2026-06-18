@@ -19,6 +19,11 @@ artefacts/*.pt
 artefacts/*.joblib
 artefacts/*.bin
 
+# Production DistilBERT artefact + reproducibility metadata — tracked
+# intentionally so the integration test has a real artefact to load
+!artefacts/distilbert_finsight.pt
+!artefacts/distilbert_finsight_meta.json
+
 # Data (downloaded at runtime — keep only .gitkeep)
 data/*.csv
 data/*.json

@@ -21,6 +21,7 @@ from src.ingestion.schema import ClassificationResult
 
 try:
     from codecarbon import EmissionsTracker
+    from codecarbon.output_methods.base_output import OutputMethod
 
     _HAS_CODECARBON = True
 except ImportError:
@@ -131,7 +132,9 @@ class FinSightClassifier:
         if _HAS_CODECARBON:
             Path("artefacts").mkdir(exist_ok=True)
             tracker = EmissionsTracker(
-                output_dir="artefacts/", log_level="error", save_to_file=True
+                output_dir="artefacts/",
+                log_level="error",
+                output_methods=[OutputMethod.CSV],
             )
             tracker.start()
 

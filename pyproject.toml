@@ -14,13 +14,14 @@ dependencies = [
     "transformers>=4.40",
     "torch>=2.2",
     "datasets>=2.19",
-    "scikit-learn>=1.4",
+    "scikit-learn>=1.9",
     "joblib>=1.4",
     "scipy>=1.13",
     "numpy>=1.26",
     "pandas>=2.2",
     "matplotlib>=3.8",
     "codecarbon>=2.3",
+    "pyarrow>=21.0.0",
 ]
 
 [dependency-groups]
@@ -30,6 +31,7 @@ dev = [
     "pytest-mock>=3.14",
     "ruff>=0.4",
     "mypy>=1.10",
+    "httpx2>=2.0",
 ]
 
 [tool.pytest.ini_options]

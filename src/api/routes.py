@@ -53,7 +53,7 @@ async def score(article: ArticleIn, request: Request) -> UrgencyResult:
 
 @router.post("/analyze", response_model=ArticleOut)
 async def analyze(article: ArticleIn, request: Request) -> ArticleOut:
-    start = time.time()
+    start = time.perf_counter()
     distilbert = getattr(request.app.state, "distilbert", None)
     baseline = getattr(request.app.state, "baseline", None)
     urgency_scorer = getattr(request.app.state, "urgency", None)
@@ -77,7 +77,7 @@ async def analyze(article: ArticleIn, request: Request) -> ArticleOut:
         raise HTTPException(status_code=503, detail="No generator loaded")
     risk_brief = await generator.generate(article, classification)
 
-    processing_ms = (time.time() - start) * 1000
+    processing_ms = round((time.perf_counter() - start) * 1000, 2)
     return ArticleOut(
         classification=classification,
         urgency=urgency_result,

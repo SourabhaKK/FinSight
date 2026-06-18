@@ -114,10 +114,10 @@ Results on HuffPost News Category Dataset test set (Misra, 2022) — 4,000 sampl
 
 | Metric | TF-IDF + LogReg | DistilBERT (fine-tuned) |
 |---|---|---|
-| Accuracy | 0.8985 | 0.9273 |
-| Macro-F1 | 0.8980 | 0.9269 |
+| Accuracy | 0.8985 | 0.9235 |
+| Macro-F1 | 0.8980 | 0.9237 |
 | Inference p50 | 1.54 ms | 11.64 ms (GPU) |
-| Training CO2 (kg) | ~0.000001 | 0.007699 |
+| Training CO2 (kg) | ~0.000001 | 0.002187 |
 
 Use the TF-IDF baseline for latency-critical applications. Use DistilBERT for accuracy-critical batch workflows where the 150 ms CPU inference budget is acceptable.
 

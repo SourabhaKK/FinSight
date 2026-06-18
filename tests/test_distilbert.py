@@ -164,6 +164,8 @@ def test_predict_batch_confidence_sum_approx_one(
         truncation=True,
         return_tensors="pt",
     )
+    device = next(patched_classifier.model.parameters()).device
+    enc = {k: v.to(device) for k, v in enc.items()}
     with torch.no_grad():
         logits = patched_classifier.model(**enc).logits
 
