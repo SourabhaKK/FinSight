@@ -49,6 +49,9 @@ Thumbs.db
 .coverage
 htmlcov/
 
+# MLflow local tracking data (not committed)
+mlruns/
+
 # MyPy
 .mypy_cache/
 

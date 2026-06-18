@@ -1,4 +1,4 @@
-"""Standalone training script for FinSightClassifier on HuffPost News Category Dataset."""
+"""Standalone training script for FinSightClassifier on HuffPost News Category."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from pathlib import Path
 # allow `python scripts/train_distilbert.py` from repo root
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import mlflow
 import numpy as np
 import sklearn
 import torch
@@ -31,9 +32,15 @@ SEED = 42
 
 
 def main() -> None:
-    print(
-        f"Device: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU — WARNING: training will be slow'}"
+    mlflow.set_tracking_uri("mlruns")
+    mlflow.set_experiment("finsight")
+
+    device_name = (
+        torch.cuda.get_device_name(0)
+        if torch.cuda.is_available()
+        else "CPU — WARNING: training will be slow"
     )
+    print(f"Device: {device_name}")
 
     parser = argparse.ArgumentParser(
         description="Train FinSightClassifier on HuffPost News Category Dataset"
@@ -62,7 +69,10 @@ def main() -> None:
 
     all_items = [item for items in per_class.values() for item in items]
     random.shuffle(all_items)
-    all_texts  = [(item["headline"] + " " + item["short_description"]).strip() for item in all_items]
+    all_texts = [
+        (item["headline"] + " " + item["short_description"]).strip()
+        for item in all_items
+    ]
     all_labels = [LABEL_TO_INT[item["category"]] for item in all_items]
 
     if args.quick:
@@ -93,62 +103,94 @@ def main() -> None:
     artefact_path = "artefacts/distilbert_finsight.pt"
     meta_path = "artefacts/distilbert_finsight_meta.json"
 
-    print("\nInitialising FinSightClassifier (distilbert-base-uncased)...")
-    clf = FinSightClassifier()
+    with mlflow.start_run(run_name="distilbert-finetune"):
+        mlflow.log_param("model_name", "distilbert-base-uncased")
+        mlflow.log_param("epochs", epochs)
+        mlflow.log_param("batch_size", batch_size)
+        mlflow.log_param("learning_rate", lr)
+        mlflow.log_param("train_samples", len(x_train))
+        mlflow.log_param("val_samples", len(x_val))
+        mlflow.log_param("test_samples", len(test_texts))
+        mlflow.log_param("seed", SEED)
+        mlflow.log_param("dataset", "heegyu/news-category-dataset")
+        mlflow.log_param("num_classes", 4)
 
-    print("\nStarting training...")
-    history = clf.train(
-        train_texts=x_train,
-        train_labels=y_train,
-        val_texts=x_val,
-        val_labels=y_val,
-        epochs=epochs,
-        batch_size=batch_size,
-        lr=lr,
-        output_path=artefact_path,
-    )
+        print("\nInitialising FinSightClassifier (distilbert-base-uncased)...")
+        clf = FinSightClassifier()
 
-    print("\nTraining history:")
-    for i, (tl, vl, va) in enumerate(
-        zip(history["train_loss"], history["val_loss"], history["val_accuracy"])
-    ):
-        print(f"  Epoch {i + 1}: train_loss={tl:.4f}, val_loss={vl:.4f}, val_acc={va:.4f}")
+        print("\nStarting training...")
+        history = clf.train(
+            train_texts=x_train,
+            train_labels=y_train,
+            val_texts=x_val,
+            val_labels=y_val,
+            epochs=epochs,
+            batch_size=batch_size,
+            lr=lr,
+            output_path=artefact_path,
+        )
 
-    print("\nEvaluating on test set...")
-    metrics = clf.evaluate(test_texts, test_labels)
+        print("\nTraining history:")
+        for i, (tl, vl, va) in enumerate(
+            zip(history["train_loss"], history["val_loss"], history["val_accuracy"])
+        ):
+            print(
+                f"  Epoch {i + 1}: train_loss={tl:.4f}, "
+                f"val_loss={vl:.4f}, val_acc={va:.4f}"
+            )
+            mlflow.log_metric("train_loss", tl, step=i)
+            mlflow.log_metric("val_loss", vl, step=i)
+            mlflow.log_metric("val_acc", va, step=i)
 
-    print("\n=== Evaluation Report ===")
-    print(f"Accuracy:    {metrics['accuracy']:.4f}")
-    print(f"Macro F1:    {metrics['macro_f1']:.4f}")
-    print(f"Weighted F1: {metrics['weighted_f1']:.4f}")
-    print("\nPer-class F1:")
-    for label, score in metrics["per_class_f1"].items():
-        print(f"  {label:<12} {score:.4f}")
+        co2_kg = history["co2_kg"][0] if history.get("co2_kg") else 0.0
 
-    meta = {
-        "model": "distilbert-base-uncased",
-        "task": "4-class news classification",
-        "classes": SELECTED_CATEGORIES,
-        "dataset": "heegyu/news-category-dataset",
-        "train_samples": len(x_train),
-        "val_samples": len(x_val),
-        "test_samples": len(test_texts),
-        "epochs": epochs,
-        "batch_size": batch_size,
-        "learning_rate": lr,
-        "seed": SEED,
-        "accuracy": metrics["accuracy"],
-        "macro_f1": metrics["macro_f1"],
-        "training_date": datetime.now(timezone.utc).isoformat(),
-        "sklearn_version": sklearn.__version__,
-        "torch_version": torch.__version__,
-        "transformers_version": transformers.__version__,
-    }
-    with open(meta_path, "w") as f:
-        json.dump(meta, f, indent=2)
+        print("\nEvaluating on test set...")
+        metrics = clf.evaluate(test_texts, test_labels)
 
-    print(f"\nArtefact saved to: {artefact_path}")
-    print(f"Metadata saved to: {meta_path}")
+        print("\n=== Evaluation Report ===")
+        print(f"Accuracy:    {metrics['accuracy']:.4f}")
+        print(f"Macro F1:    {metrics['macro_f1']:.4f}")
+        print(f"Weighted F1: {metrics['weighted_f1']:.4f}")
+        print("\nPer-class F1:")
+        for label, score in metrics["per_class_f1"].items():
+            print(f"  {label:<12} {score:.4f}")
+
+        mlflow.log_metric("test_accuracy", metrics["accuracy"])
+        mlflow.log_metric("test_macro_f1", metrics["macro_f1"])
+        mlflow.log_metric("test_weighted_f1", metrics["weighted_f1"])
+        mlflow.log_metric("co2_kg", co2_kg)
+        mlflow.log_metric("f1_politics", metrics["per_class_f1"]["Politics"])
+        mlflow.log_metric("f1_business", metrics["per_class_f1"]["Business"])
+        mlflow.log_metric("f1_entertainment", metrics["per_class_f1"]["Entertainment"])
+        mlflow.log_metric("f1_wellness", metrics["per_class_f1"]["Wellness"])
+
+        meta = {
+            "model": "distilbert-base-uncased",
+            "task": "4-class news classification",
+            "classes": SELECTED_CATEGORIES,
+            "dataset": "heegyu/news-category-dataset",
+            "train_samples": len(x_train),
+            "val_samples": len(x_val),
+            "test_samples": len(test_texts),
+            "epochs": epochs,
+            "batch_size": batch_size,
+            "learning_rate": lr,
+            "seed": SEED,
+            "accuracy": metrics["accuracy"],
+            "macro_f1": metrics["macro_f1"],
+            "training_date": datetime.now(timezone.utc).isoformat(),
+            "sklearn_version": sklearn.__version__,
+            "torch_version": torch.__version__,
+            "transformers_version": transformers.__version__,
+        }
+        with open(meta_path, "w") as f:
+            json.dump(meta, f, indent=2)
+
+        mlflow.log_artifact(artefact_path)
+        mlflow.log_artifact(meta_path)
+
+        print(f"\nArtefact saved to: {artefact_path}")
+        print(f"Metadata saved to: {meta_path}")
 
 
 if __name__ == "__main__":

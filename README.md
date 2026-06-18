@@ -123,6 +123,29 @@ Use the TF-IDF baseline for latency-critical applications. Use DistilBERT for ac
 
 ---
 
+## Experiment tracking
+
+Experiments are tracked with MLflow. To view the experiment UI after a training run:
+
+```bash
+mlflow ui --backend-store-uri mlruns
+```
+
+Then open http://localhost:5000 to compare runs across:
+
+- Hyperparameters (epochs, batch size, learning rate)
+- Per-epoch training and validation metrics
+- Final test accuracy, macro-F1, and per-class F1
+- CO2 emissions per run
+- Model artefacts
+
+The `finsight` experiment contains two run types:
+
+- `distilbert-finetune` — full fine-tuning run (~4 min on GPU)
+- `tfidf-logreg-baseline` — baseline run (<5 seconds on CPU)
+
+---
+
 ## LLM providers
 
 | Provider | Model | Free tier | Structured output |
