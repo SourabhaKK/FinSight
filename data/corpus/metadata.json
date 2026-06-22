@@ -1,0 +1,222 @@
+[
+  {
+    "filename": "sec_aapl_10q_2026-05-01.txt",
+    "source": "SEC EDGAR",
+    "company": "Apple Inc.",
+    "ticker": "AAPL",
+    "document_type": "10-Q",
+    "date": "2026-05-01",
+    "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000013/aapl-20260328.htm",
+    "fallback": false
+  },
+  {
+    "filename": "sec_aapl_10q_2026-01-30.txt",
+    "source": "SEC EDGAR",
+    "company": "Apple Inc.",
+    "ticker": "AAPL",
+    "document_type": "10-Q",
+    "date": "2026-01-30",
+    "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000006/aapl-20251227.htm",
+    "fallback": false
+  },
+  {
+    "filename": "sec_aapl_10k_2025-10-31.txt",
+    "source": "SEC EDGAR",
+    "company": "Apple Inc.",
+    "ticker": "AAPL",
+    "document_type": "10-K",
+    "date": "2025-10-31",
+    "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm",
+    "fallback": false
+  },
+  {
+    "filename": "sec_msft_10q_2026-04-29.txt",
+    "source": "SEC EDGAR",
+    "company": "Microsoft Corporation",
+    "ticker": "MSFT",
+    "document_type": "10-Q",
+    "date": "2026-04-29",
+    "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+    "fallback": false
+  },
+  {
+    "filename": "sec_msft_10q_2026-01-28.txt",
+    "source": "SEC EDGAR",
+    "company": "Microsoft Corporation",
+    "ticker": "MSFT",
+    "document_type": "10-Q",
+    "date": "2026-01-28",
+    "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526027207/msft-20251231.htm",
+    "fallback": false
+  },
+  {
+    "filename": "sec_msft_10q_2025-10-29.txt",
+    "source": "SEC EDGAR",
+    "company": "Microsoft Corporation",
+    "ticker": "MSFT",
+    "document_type": "10-Q",
+    "date": "2025-10-29",
+    "url": "https://www.sec.gov/Archives/edgar/data/789019/000119312525256321/msft-20250930.htm",
+    "fallback": false
+  },
+  {
+    "filename": "sec_jpm_10q_2026-05-01.txt",
+    "source": "SEC EDGAR",
+    "company": "JPMorgan Chase & Co.",
+    "ticker": "JPM",
+    "document_type": "10-Q",
+    "date": "2026-05-01",
+    "url": "https://www.sec.gov/Archives/edgar/data/19617/000162828026029344/jpm-20260331.htm",
+    "fallback": false
+  },
+  {
+    "filename": "sec_jpm_10k_2026-02-13.txt",
+    "source": "SEC EDGAR",
+    "company": "JPMorgan Chase & Co.",
+    "ticker": "JPM",
+    "document_type": "10-K",
+    "date": "2026-02-13",
+    "url": "https://www.sec.gov/Archives/edgar/data/19617/000162828026008131/jpm-20251231.htm",
+    "fallback": false
+  },
+  {
+    "filename": "sec_jpm_10q_2025-11-04.txt",
+    "source": "SEC EDGAR",
+    "company": "JPMorgan Chase & Co.",
+    "ticker": "JPM",
+    "document_type": "10-Q",
+    "date": "2025-11-04",
+    "url": "https://www.sec.gov/Archives/edgar/data/19617/000162828025048859/jpm-20250930.htm",
+    "fallback": false
+  },
+  {
+    "filename": "sec_tsla_10q_2026-04-23.txt",
+    "source": "SEC EDGAR",
+    "company": "Tesla, Inc.",
+    "ticker": "TSLA",
+    "document_type": "10-Q",
+    "date": "2026-04-23",
+    "url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828026026673/tsla-20260331.htm",
+    "fallback": false
+  },
+  {
+    "filename": "sec_tsla_10k_2026-01-29.txt",
+    "source": "SEC EDGAR",
+    "company": "Tesla, Inc.",
+    "ticker": "TSLA",
+    "document_type": "10-K",
+    "date": "2026-01-29",
+    "url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828026003952/tsla-20251231.htm",
+    "fallback": false
+  },
+  {
+    "filename": "sec_tsla_10q_2025-10-23.txt",
+    "source": "SEC EDGAR",
+    "company": "Tesla, Inc.",
+    "ticker": "TSLA",
+    "document_type": "10-Q",
+    "date": "2025-10-23",
+    "url": "https://www.sec.gov/Archives/edgar/data/1318605/000162828025045968/tsla-20250930.htm",
+    "fallback": false
+  },
+  {
+    "filename": "fomc_statement_20260617.txt",
+    "source": "Federal Reserve FOMC press release archive",
+    "company": "Federal Reserve",
+    "ticker": "n/a",
+    "document_type": "FOMC Statement",
+    "date": "20260617",
+    "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260617a.htm",
+    "fallback": false
+  },
+  {
+    "filename": "fomc_statement_20260429.txt",
+    "source": "Federal Reserve FOMC press release archive",
+    "company": "Federal Reserve",
+    "ticker": "n/a",
+    "document_type": "FOMC Statement",
+    "date": "20260429",
+    "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260429a.htm",
+    "fallback": false
+  },
+  {
+    "filename": "fomc_statement_20260318.txt",
+    "source": "Federal Reserve FOMC press release archive",
+    "company": "Federal Reserve",
+    "ticker": "n/a",
+    "document_type": "FOMC Statement",
+    "date": "20260318",
+    "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260318a.htm",
+    "fallback": false
+  },
+  {
+    "filename": "fomc_statement_20260128.txt",
+    "source": "Federal Reserve FOMC press release archive",
+    "company": "Federal Reserve",
+    "ticker": "n/a",
+    "document_type": "FOMC Statement",
+    "date": "20260128",
+    "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260128a.htm",
+    "fallback": false
+  },
+  {
+    "filename": "fomc_statement_20251210.txt",
+    "source": "Federal Reserve FOMC press release archive",
+    "company": "Federal Reserve",
+    "ticker": "n/a",
+    "document_type": "FOMC Statement",
+    "date": "20251210",
+    "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20251210a.htm",
+    "fallback": false
+  },
+  {
+    "filename": "fomc_statement_20251029.txt",
+    "source": "Federal Reserve FOMC press release archive",
+    "company": "Federal Reserve",
+    "ticker": "n/a",
+    "document_type": "FOMC Statement",
+    "date": "20251029",
+    "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20251029a.htm",
+    "fallback": false
+  },
+  {
+    "filename": "fomc_statement_20250917.txt",
+    "source": "Federal Reserve FOMC press release archive",
+    "company": "Federal Reserve",
+    "ticker": "n/a",
+    "document_type": "FOMC Statement",
+    "date": "20250917",
+    "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20250917a.htm",
+    "fallback": false
+  },
+  {
+    "filename": "fomc_statement_20250822.txt",
+    "source": "Federal Reserve FOMC press release archive",
+    "company": "Federal Reserve",
+    "ticker": "n/a",
+    "document_type": "FOMC Statement",
+    "date": "20250822",
+    "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20250822a.htm",
+    "fallback": false
+  },
+  {
+    "filename": "fomc_statement_20250730.txt",
+    "source": "Federal Reserve FOMC press release archive",
+    "company": "Federal Reserve",
+    "ticker": "n/a",
+    "document_type": "FOMC Statement",
+    "date": "20250730",
+    "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20250730a.htm",
+    "fallback": false
+  },
+  {
+    "filename": "fomc_statement_20250618.txt",
+    "source": "Federal Reserve FOMC press release archive",
+    "company": "Federal Reserve",
+    "ticker": "n/a",
+    "document_type": "FOMC Statement",
+    "date": "20250618",
+    "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20250618a.htm",
+    "fallback": false
+  }
+]

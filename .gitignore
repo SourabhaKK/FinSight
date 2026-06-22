@@ -31,6 +31,9 @@ data/*.parquet
 data/*.arrow
 data/*.lock
 
+# Qdrant local persistence volume (recreated by ingest_corpus.py)
+data/qdrant_storage/
+
 # Emissions & training logs (committed separately after training)
 artefacts/emissions.csv
 artefacts/training_history.json

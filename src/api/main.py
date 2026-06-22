@@ -53,6 +53,22 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         logger.warning("RiskBriefGenerator not instantiated (%s) — set to None.", exc)
         app.state.generator = None
 
+    try:
+        from qdrant_client import QdrantClient
+
+        from src.rag.embeddings import EMBEDDING_DIM
+        from src.rag.vectorstore import QdrantVectorStore
+
+        client = QdrantClient(
+            url=settings.qdrant_url, timeout=5, check_compatibility=False
+        )
+        client.get_collections()  # probe connectivity — raises if unreachable
+        app.state.rag_store = QdrantVectorStore(client, embedding_dim=EMBEDDING_DIM)
+        logger.info("Connected to Qdrant at %s.", settings.qdrant_url)
+    except Exception as exc:
+        logger.warning("Qdrant not reachable (%s) — rag_store set to None.", exc)
+        app.state.rag_store = None
+
     yield
 
     logger.info("Shutting down FinSight.")

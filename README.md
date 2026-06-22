@@ -30,7 +30,8 @@ Analysts at banks, asset managers, and compliance desks face thousands of news a
 - Three-tier fault tolerance with exponential backoff and a deterministic fallback that produces valid output with zero network calls
 - FastAPI inference service with `/classify`, `/score`, and `/analyze` endpoints, Pydantic v2 schema validation, and lifespan-based model loading
 - Statistical drift detection — PSI, KS test, and Chi-Square — with `stable` / `warning` / `critical` status and CLI exit codes for pipeline integration
-- 110 pytest cases across 10 modules, all passing without a GPU
+- Retrieval-augmented generation over a real SEC EDGAR / FOMC document corpus — `/analyze/rag` answers questions with citations grounded in retrieved source excerpts, scored with RAGAS
+- 110+ pytest cases across multiple modules, all passing without a GPU
 - Multi-stage Docker build and GitHub Actions CI/CD pipeline (lint → typecheck → test → docker build)
 
 ---
@@ -42,8 +43,9 @@ Analysts at banks, asset managers, and compliance desks face thousands of news a
 | 1 | `ingestion` | Pydantic schema validation, tabular metadata extraction |
 | 2 | `preprocessing` | Text cleaning, leakage-safe train / val / test splits |
 | 3 | `models` | TF-IDF + LogReg baseline, DistilBERT fine-tuned, tabular urgency scorer |
-| 4 | `api` | FastAPI — `/classify`, `/score`, `/analyze`, `/health`, `/ready` |
+| 4 | `api` | FastAPI — `/classify`, `/score`, `/analyze`, `/analyze/rag`, `/health`, `/ready` |
 | 5 | `monitoring` | PSI / KS / Chi-Square drift detection, CLI alerts with exit codes |
+| 6 | `rag` | Chunking, embeddings, Qdrant vector store, retrieval, grounded generation |
 
 ---
 
@@ -80,6 +82,7 @@ docker-compose up
 | POST | `/classify` | Topic classification (4-class) | `ClassificationResult` |
 | POST | `/score` | Urgency scoring from article metadata | `UrgencyResult` |
 | POST | `/analyze` | Full pipeline — classify + score + LLM risk brief | `ArticleOut` |
+| POST | `/analyze/rag` | Document-grounded Q&A over the SEC/FOMC corpus | `GroundedBrief` |
 | GET | `/health` | Health check | `{"status": "ok"}` |
 | GET | `/ready` | Models loaded check | `{"models_loaded": bool}` |
 
@@ -146,6 +149,89 @@ The `finsight` experiment contains two run types:
 
 ---
 
+## RAG pipeline
+
+Retrieval-augmented generation over a small, real corpus of SEC EDGAR filing excerpts and Federal Reserve FOMC statements, so `/analyze/rag` can answer questions with citations grounded in actual source text rather than the LLM's own training data.
+
+**Architecture:**
+
+```
+data/corpus/*.txt  →  chunking (recursive splitter, 500/50 tokens)
+                   →  embeddings (all-MiniLM-L6-v2, 384-dim, CPU)
+                   →  Qdrant (cosine similarity)
+                   →  retrieval (dense top-k)
+                   →  grounded generation (existing provider-agnostic LLM client)
+                   →  GroundedBrief (answer + cited sources + confidence)
+```
+
+`src/rag/` holds the pipeline: `chunking.py`, `embeddings.py`, `vectorstore.py` (Qdrant wrapper), `retriever.py`, `generator.py`, `schema.py`.
+
+**Endpoint:**
+
+```bash
+curl -X POST http://localhost:8000/analyze/rag \
+  -H "Content-Type: application/json" \
+  -d '{"query": "What did the FOMC decide about the federal funds rate in its June 2026 statement?"}'
+```
+
+```json
+{
+  "answer": "The Committee decided to maintain the target range for the federal funds rate at 3-1/2 to 3-3/4 percent [fomc_statement_20260617.txt].",
+  "sources": [
+    {"filename": "fomc_statement_20260617.txt", "excerpt": "The Committee decided to maintain the target range...", "relevance_score": 0.87}
+  ],
+  "confidence": 0.9
+}
+```
+
+**How to run:**
+
+```bash
+# 1. Start Qdrant
+docker-compose up -d qdrant
+
+# 2. Fetch the corpus (live from SEC EDGAR + Federal Reserve, no API key)
+python scripts/fetch_corpus.py
+
+# 3. Chunk, embed, and load it into Qdrant
+python scripts/ingest_corpus.py
+
+# 4. Run the API
+uvicorn src.api.main:app --reload
+```
+
+**RAGAS evaluation:**
+
+```bash
+python scripts/evaluate_rag.py --mode dense
+```
+
+Runs a 10-question hand-written eval set (each question verifiable against the actual fetched corpus) through retrieval + generation, then scores the results with [RAGAS](https://github.com/explodinggradients/ragas):
+
+- **faithfulness** — does the answer only state things supported by the retrieved context?
+- **answer_relevancy** — does the answer actually address the question asked?
+- **context_precision** — of the retrieved chunks, how many were relevant?
+- **context_recall** — did retrieval surface the chunks actually needed to answer?
+
+Results are saved to `artefacts/ragas_eval_results.json`.
+
+**Document corpus:** 22 real documents fetched live (no fallback excerpts needed) — 12 SEC EDGAR 10-K/10-Q risk-factor excerpts for Apple, Microsoft, JPMorgan Chase, and Tesla (via the stable `data.sec.gov/submissions` API), and 10 FOMC statement excerpts from the Federal Reserve's public press release archive. Chosen for recognisable, verifiable, regularly-updated financial content with zero auth required. See `data/corpus/metadata.json` for per-document source URLs and dates.
+
+### Retrieval ablation
+
+A second retrieval mode, `dense_reranked`, is implemented in `src/rag/retriever.py`: dense search retrieves the top 15 candidates, then a cross-encoder (`cross-encoder/ms-marco-MiniLM-L-6-v2`) reranks them down to the top 5. It is not wired into the API — `/analyze/rag` always uses `mode="dense"` — but `scripts/evaluate_rag.py --mode dense_reranked` reuses the same eval harness to compare it against dense-only retrieval.
+
+**Status: code complete, not yet run.** The reranking logic is unit-tested and verified in isolation (`tests/test_rag.py::test_dense_reranked_mode_reorders_by_cross_encoder_score`), but producing the actual comparison table requires running `scripts/evaluate_rag.py` twice against a live Qdrant instance with real LLM calls — which wasn't run as part of this change, since live execution of the evaluation scripts was explicitly out of scope for this session.
+
+```bash
+python scripts/evaluate_rag.py --mode dense
+python scripts/evaluate_rag.py --mode dense_reranked
+```
+
+Results are generated at runtime — run the two commands above after ingesting the corpus to reproduce. The comparison table is saved to artefacts/retrieval_ablation_results.json. The dense_reranked configuration retrieves top-15 candidates via dense search then reranks using a cross-encoder (cross-encoder/ms-marco-MiniLM-L-6-v2), selecting the final top-5 by rerank score. Expected behaviour: reranking improves context_precision at the cost of ~50ms additional latency per query.
+
+---
+
 ## LLM providers
 
 | Provider | Model | Free tier | Structured output |
@@ -191,13 +277,15 @@ finsight/
 │   ├── preprocessing/  # TextCleaner, leakage-safe splits
 │   ├── models/         # baseline, distilbert, urgency scorer
 │   ├── llm/            # client abstraction, providers, fallback
+│   ├── rag/            # chunking, embeddings, Qdrant store, retriever, generator
 │   ├── api/            # FastAPI app, routes, middleware
 │   └── monitoring/     # drift detection, CLI alerts
-├── tests/              # 110 pytest cases
+├── tests/              # 110+ pytest cases
 ├── notebooks/          # exploratory notebook
-├── scripts/            # training scripts
+├── scripts/            # training, corpus fetch/ingest, RAGAS evaluation
+├── data/corpus/        # SEC EDGAR + FOMC document corpus
 ├── Dockerfile
-└── docker-compose.yml
+└── docker-compose.yml  # finsight + qdrant services
 ```
 
 ---
@@ -214,6 +302,8 @@ finsight/
 | `DISTILBERT_MODEL_PATH` | Path to `.pt` artefact | `artefacts/distilbert_finsight.pt` |
 | `BASELINE_MODEL_PATH` | Path to joblib artefact | `artefacts/baseline_pipeline.joblib` |
 | `URGENCY_MODEL_PATH` | Path to joblib artefact | `artefacts/urgency_pipeline.joblib` |
+| `QDRANT_URL` | Qdrant vector store URL | `http://localhost:6333` |
+| `RAG_COLLECTION_NAME` | Qdrant collection name for the RAG corpus | `finsight_corpus` |
 
 ---
 

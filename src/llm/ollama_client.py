@@ -49,3 +49,23 @@ class OllamaClient(LLMClient):
         result = json.loads(data["response"])
         brief = RiskBrief(**result)
         return brief.model_dump()
+
+    async def complete(self, system_prompt: str, user_prompt: str) -> str:
+        prompt = f"{system_prompt}\n\n{user_prompt}"
+        url = f"{self._base_url}/api/generate"
+        payload = {
+            "model": self._model,
+            "prompt": prompt,
+            "stream": False,
+        }
+        try:
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(url, json=payload)
+                response.raise_for_status()
+        except (httpx.ConnectError, httpx.TimeoutException) as exc:
+            raise ConnectionError(
+                f"Ollama unreachable at {self._base_url}: {exc}"
+            ) from exc
+
+        data = response.json()
+        return str(data["response"])

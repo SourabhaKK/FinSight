@@ -11,6 +11,9 @@ from src.ingestion.schema import (
     ClassificationResult,
     UrgencyResult,
 )
+from src.rag.generator import generate_grounded_brief
+from src.rag.retriever import DEFAULT_COLLECTION, retrieve
+from src.rag.schema import GroundedBrief, RAGQuery
 
 router = APIRouter()
 
@@ -84,3 +87,19 @@ async def analyze(article: ArticleIn, request: Request) -> ArticleOut:
         risk_brief=risk_brief,
         processing_ms=processing_ms,
     )
+
+
+@router.post("/analyze/rag", response_model=GroundedBrief)
+async def analyze_rag(payload: RAGQuery, request: Request) -> GroundedBrief:
+    rag_store = getattr(request.app.state, "rag_store", None)
+    if rag_store is None:
+        raise HTTPException(status_code=503, detail="No vector store loaded")
+
+    retrieved_chunks = retrieve(
+        payload.query,
+        top_k=5,
+        mode="dense",
+        store=rag_store,
+        collection_name=DEFAULT_COLLECTION,
+    )
+    return await generate_grounded_brief(payload.query, retrieved_chunks)

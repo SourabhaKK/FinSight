@@ -10,6 +10,12 @@ class LLMClient(ABC):
         classification_label: str,
     ) -> dict[str, Any]: ...
 
+    @abstractmethod
+    async def complete(self, system_prompt: str, user_prompt: str) -> str:
+        """Generic free-text completion, for callers that don't need the
+        RiskBrief-shaped output of generate_risk_brief (e.g. RAG generation)."""
+        ...
+
 
 def get_llm_client(provider: str) -> LLMClient:
     match provider:

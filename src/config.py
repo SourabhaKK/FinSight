@@ -34,5 +34,9 @@ class Settings(BaseSettings):
     max_text_length: int = 10000
     min_text_length: int = 10
 
+    # RAG / Qdrant
+    qdrant_url: str = "http://localhost:6333"
+    rag_collection_name: str = "finsight_corpus"
+
 
 settings = Settings()

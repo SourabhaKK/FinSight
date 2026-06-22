@@ -5,6 +5,7 @@ from typing import Literal
 
 import joblib
 import numpy as np
+import numpy.typing as npt
 from scipy.stats import chisquare, ks_2samp
 
 _PSI_WARN = 0.1
@@ -25,8 +26,8 @@ class DriftReport:
 
 class DriftDetector:
     def __init__(self) -> None:
-        self.reference_topic_dist: np.ndarray | None = None
-        self.reference_lengths: np.ndarray | None = None
+        self.reference_topic_dist: npt.NDArray[np.float64] | None = None
+        self.reference_lengths: npt.NDArray[np.float64] | None = None
 
     def fit(
         self,

@@ -44,6 +44,8 @@ jobs:
       LOG_LEVEL: INFO
       MAX_TEXT_LENGTH: "10000"
       MIN_TEXT_LENGTH: "10"
+      QDRANT_URL: http://localhost:6333
+      RAG_COLLECTION_NAME: finsight_corpus
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -53,7 +55,7 @@ jobs:
       - run: uv sync --dev
       - run: >
           uv run pytest tests/ -v
-          -m "not slow and not benchmark"
+          -m "not slow and not benchmark and not integration"
           --tb=short -x
 
   docker-build:

@@ -42,3 +42,14 @@ class GeminiClient(LLMClient):
         response = self._model.generate_content(prompt)
         brief = RiskBrief.model_validate_json(response.text)
         return brief.model_dump()
+
+    async def complete(self, system_prompt: str, user_prompt: str) -> str:
+        model = genai.GenerativeModel(  # type: ignore[attr-defined]
+            model_name=settings.gemini_model,
+            system_instruction=system_prompt,
+            generation_config=genai.GenerationConfig(  # type: ignore[attr-defined]
+                temperature=0.0,
+            ),
+        )
+        response = model.generate_content(user_prompt)
+        return str(response.text)
