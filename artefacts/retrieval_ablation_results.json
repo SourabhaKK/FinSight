@@ -1,0 +1,24 @@
+{
+  "eval_set_size": 5,
+  "judge_llm": "gpt-4o-mini",
+  "judge_embeddings": "text-embedding-3-small",
+  "metrics_evaluated": ["faithfulness", "context_precision", "context_recall"],
+  "metrics_excluded": {
+    "answer_relevancy": "excluded — requires synthetic question generation which exceeds free-tier LLM response timeout"
+  },
+  "dense": {
+    "faithfulness": 0.6106,
+    "context_precision": 0.9278,
+    "context_recall": 1.0
+  },
+  "dense_reranked": {
+    "faithfulness": 0.6333,
+    "context_precision": 0.8883,
+    "context_recall": 1.0
+  },
+  "delta": {
+    "faithfulness": 0.0227,
+    "context_precision": -0.0395,
+    "context_recall": 0.0
+  }
+}

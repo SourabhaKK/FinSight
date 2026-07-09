@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     # LLM provider
     llm_provider: str = "ollama"
 
+    # OpenAI (used for RAGAS judge LLM in evaluate_rag.py)
+    openai_api_key: str = ""
+
     # Gemini
     gemini_api_key: str = ""
     gemini_model: str = "gemini-2.0-flash"

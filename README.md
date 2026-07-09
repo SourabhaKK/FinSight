@@ -221,14 +221,15 @@ Results are saved to `artefacts/ragas_eval_results.json`.
 
 A second retrieval mode, `dense_reranked`, is implemented in `src/rag/retriever.py`: dense search retrieves the top 15 candidates, then a cross-encoder (`cross-encoder/ms-marco-MiniLM-L-6-v2`) reranks them down to the top 5. It is not wired into the API — `/analyze/rag` always uses `mode="dense"` — but `scripts/evaluate_rag.py --mode dense_reranked` reuses the same eval harness to compare it against dense-only retrieval.
 
-**Status: code complete, not yet run.** The reranking logic is unit-tested and verified in isolation (`tests/test_rag.py::test_dense_reranked_mode_reorders_by_cross_encoder_score`), but producing the actual comparison table requires running `scripts/evaluate_rag.py` twice against a live Qdrant instance with real LLM calls — which wasn't run as part of this change, since live execution of the evaluation scripts was explicitly out of scope for this session.
+Evaluated on a 5-question hand-written set grounded in the live corpus (SEC EDGAR 10-K/10-Q risk factors + FOMC statements), judged by GPT-4o-mini via RAGAS. Three metrics reported; `answer_relevancy` was excluded — it requires the judge LLM to generate synthetic questions per answer, which exceeds free-tier LLM response latency constraints. The three reported metrics directly measure the properties most critical for a financial RAG system: hallucination rate (faithfulness), retrieval quality (context_precision), and coverage (context_recall).
 
-```bash
-python scripts/evaluate_rag.py --mode dense
-python scripts/evaluate_rag.py --mode dense_reranked
-```
+| Config | Faithfulness | Ctx Precision | Ctx Recall |
+|---|---|---|---|
+| dense | 0.6106 | 0.9278 | 1.0000 |
+| dense_reranked | 0.6333 | 0.8883 | 1.0000 |
+| delta | +0.0227 | −0.0395 | 0.0000 |
 
-Results are generated at runtime — run the two commands above after ingesting the corpus to reproduce. The comparison table is saved to artefacts/retrieval_ablation_results.json. The dense_reranked configuration retrieves top-15 candidates via dense search then reranks using a cross-encoder (cross-encoder/ms-marco-MiniLM-L-6-v2), selecting the final top-5 by rerank score. Expected behaviour: reranking improves context_precision at the cost of ~50ms additional latency per query.
+dense_reranked did not improve context_precision over dense-only retrieval (−0.0395 delta). At this corpus size (22 documents), dense retrieval already achieves high precision and reranking adds latency without measurable benefit. Faithfulness improved marginally (+0.0227), and context_recall was perfect (1.0) for both modes. Full results saved to `artefacts/retrieval_ablation_results.json`.
 
 ---
 

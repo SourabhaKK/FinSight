@@ -31,5 +31,9 @@ def get_llm_client(provider: str) -> LLMClient:
             from src.llm.ollama_client import OllamaClient
 
             return OllamaClient()
+        case "openai":
+            from src.llm.openai_client import OpenAIClient
+
+            return OpenAIClient()
         case _:
             raise ValueError(f"Unknown LLM provider: {provider!r}")

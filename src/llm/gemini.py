@@ -18,7 +18,16 @@ _SYSTEM_INSTRUCTION = (
 class GeminiClient(LLMClient):
     def __init__(self) -> None:
         genai.configure(api_key=settings.gemini_api_key)  # type: ignore[attr-defined]
-        self._model = genai.GenerativeModel(  # type: ignore[attr-defined]
+
+    async def generate_risk_brief(
+        self,
+        article_text: str,
+        classification_label: str,
+    ) -> dict[str, Any]:
+        # Built per call (not in __init__) so a schema-incompatible SDK
+        # version only breaks risk-brief generation, not every GeminiClient
+        # use — e.g. complete(), which needs no response_schema at all.
+        model = genai.GenerativeModel(  # type: ignore[attr-defined]
             model_name=settings.gemini_model,
             system_instruction=_SYSTEM_INSTRUCTION,
             generation_config=genai.GenerationConfig(  # type: ignore[attr-defined]
@@ -27,19 +36,13 @@ class GeminiClient(LLMClient):
                 temperature=0.0,
             ),
         )
-
-    async def generate_risk_brief(
-        self,
-        article_text: str,
-        classification_label: str,
-    ) -> dict[str, Any]:
         snippet = article_text[:500]
         prompt = (
             f"Article (truncated to 500 chars):\n{snippet}\n\n"
             f"Classification: {classification_label}\n\n"
             "Return a structured risk assessment as JSON."
         )
-        response = self._model.generate_content(prompt)
+        response = model.generate_content(prompt)
         brief = RiskBrief.model_validate_json(response.text)
         return brief.model_dump()
 

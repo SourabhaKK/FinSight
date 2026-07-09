@@ -37,7 +37,7 @@ class OllamaClient(LLMClient):
             "stream": False,
         }
         try:
-            async with httpx.AsyncClient(timeout=60.0) as client:
+            async with httpx.AsyncClient(timeout=180.0) as client:
                 response = await client.post(url, json=payload)
                 response.raise_for_status()
         except (httpx.ConnectError, httpx.TimeoutException) as exc:
@@ -59,7 +59,7 @@ class OllamaClient(LLMClient):
             "stream": False,
         }
         try:
-            async with httpx.AsyncClient(timeout=60.0) as client:
+            async with httpx.AsyncClient(timeout=180.0) as client:
                 response = await client.post(url, json=payload)
                 response.raise_for_status()
         except (httpx.ConnectError, httpx.TimeoutException) as exc:

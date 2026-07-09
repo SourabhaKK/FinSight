@@ -1,0 +1,9 @@
+{
+  "mode": "dense_reranked",
+  "n_questions": 5,
+  "scores": {
+    "faithfulness": 0.6333333333333333,
+    "context_precision": 0.8883333332929583,
+    "context_recall": 1.0
+  }
+}
