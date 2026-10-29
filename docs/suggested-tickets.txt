@@ -24,3 +24,12 @@ Each follows .github/ISSUE_TEMPLATE/ticket.md.
 6. [major, L] Make the RAG evaluation meaningful at scale
    Evidence: the ablation used a 5-question set and excluded answer_relevancy; faithfulness was 0.61.
    Done when: a larger eval set is run with all four RAGAS metrics and the results are in the README.
+
+7. [fix, L] Resolve known vulnerabilities in the RAGAS/langchain dev dependencies
+   Evidence: pip-audit (2.10.1) on the locked versions from PR #2 reported 27 advisories in 6 packages: langchain 0.2.17, langchain-community 0.2.19, langchain-core 0.2.43, langchain-openai 0.1.25, langchain-text-splitters 0.2.4, langsmith 0.1.147. All are in the dev group and are held back by ragas==0.1.21 and the langchain-core<0.3 pin noted in pyproject.toml. Fix versions listed range from 0.3.x to 1.x. Whether the API runtime is affected was inferred from the dependency groups, not tested.
+   What: upgrade ragas and the langchain packages, or replace the RAGAS evaluation harness.
+   Why: remove known advisories and the exact-pin workaround.
+   Concepts to learn: how ragas versions track langchain-core; uv dependency groups.
+   Predict first: which scripts and tests break when langchain-core moves past 0.3?
+   Done when: pip-audit reports no advisories for the locked dev dependencies, scripts/check.py passes, and scripts/evaluate_rag.py still runs.
+   Note: touches dependency files, so ask before changing them.
