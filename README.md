@@ -330,6 +330,12 @@ Citation: Misra, R. (2022). News Category Dataset. arXiv:2209.11429. https://www
 
 ---
 
+## AI assistance
+
+This project was developed with AI assistance (Claude Code). AI tools were used for code, tests and documentation. Commits made with AI assistance carry a `Co-Authored-By` trailer.
+
+---
+
 ## License
 
 MIT
