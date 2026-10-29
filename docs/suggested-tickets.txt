@@ -1,0 +1,35 @@
+DRAFT first tickets for FinSight. For review only; none have been created as issues.
+Each follows .github/ISSUE_TEMPLATE/ticket.md.
+
+1. [fix, S] README CI badge is hard-coded "passing"
+   Evidence: the badge in README.md is a static shields.io image; the last CI run on main (2026-07-09) failed.
+   Done when: the badge points at the real workflow status.
+
+2. [fix, S] README quick start is out of date
+   Evidence: clone URL uses lowercase "finsight"; requires-python is now >=3.11,<3.13; the README says "Python 3.11" only.
+   Done when: README states the supported Python range and the commands work as written.
+
+3. [feature, M] Add dependency and secret scanning to CI
+   What: run pip-audit and gitleaks in GitHub Actions.
+   Done when: both run on pull requests and fail on findings.
+
+4. [feature, M] Wire dense_reranked retrieval into the API as an option
+   Evidence: README says it exists in src/rag/retriever.py but /analyze/rag always uses mode="dense".
+   Done when: a request parameter or setting selects the mode, with tests.
+
+5. [fix, M] Move the 250 MB DistilBERT artefact out of Git LFS
+   Evidence: artefacts/distilbert_finsight.pt is stored in LFS; the free quota is 1 GB storage and bandwidth, so clones and CI runs consume it.
+   Done when: the model is fetched from a release asset or model hub, and tests still pass.
+
+6. [major, L] Make the RAG evaluation meaningful at scale
+   Evidence: the ablation used a 5-question set and excluded answer_relevancy; faithfulness was 0.61.
+   Done when: a larger eval set is run with all four RAGAS metrics and the results are in the README.
+
+7. [fix, L] Resolve known vulnerabilities in the RAGAS/langchain dev dependencies
+   Evidence: pip-audit (2.10.1) on the locked versions from PR #2 reported 27 advisories in 6 packages: langchain 0.2.17, langchain-community 0.2.19, langchain-core 0.2.43, langchain-openai 0.1.25, langchain-text-splitters 0.2.4, langsmith 0.1.147. All are in the dev group and are held back by ragas==0.1.21 and the langchain-core<0.3 pin noted in pyproject.toml. Fix versions listed range from 0.3.x to 1.x. Whether the API runtime is affected was inferred from the dependency groups, not tested.
+   What: upgrade ragas and the langchain packages, or replace the RAGAS evaluation harness.
+   Why: remove known advisories and the exact-pin workaround.
+   Concepts to learn: how ragas versions track langchain-core; uv dependency groups.
+   Predict first: which scripts and tests break when langchain-core moves past 0.3?
+   Done when: pip-audit reports no advisories for the locked dev dependencies, scripts/check.py passes, and scripts/evaluate_rag.py still runs.
+   Note: touches dependency files, so ask before changing them.
