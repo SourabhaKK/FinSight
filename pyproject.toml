@@ -2,7 +2,7 @@
 name = "finsight"
 version = "0.1.0"
 description = "Financial News Risk Intelligence System"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.13"
 dependencies = [
     "fastapi>=0.111",
     "uvicorn[standard]>=0.29",
