@@ -67,7 +67,16 @@ mlflow.db
 
 # Environment files (never commit real keys)
 .env
-.env.local
+.env.*
+!.env.example
+
+# Keys and credentials
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+service-account*.json
 
 # Assignment report files — kept locally for Tabula submission
 # Do not commit — academic integrity risk if public
