@@ -16,4 +16,3 @@ Only the latest commit on `main` is supported.
 
 - Secrets are never committed to this repository. If you find one, please report it privately.
 - Model files (`artefacts/*.pt`, `*.joblib`) are loaded with pickle-based loaders. Only load model files you trust.
-- Known dependency advisories in the RAG evaluation tooling (the `ragas` and langchain dev packages) are tracked in `docs/suggested-tickets.txt`.
