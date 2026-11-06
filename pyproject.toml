@@ -26,7 +26,7 @@ dependencies = [
     "mlflow>=2.13.0",
     "sentence-transformers>=5.6.0",
     "qdrant-client>=1.18.0",
-    "ragas==0.1.21",
+    "ragas>=0.2,<0.4",
 ]
 
 [dependency-groups]
@@ -37,9 +37,9 @@ dev = [
     "ruff>=0.4",
     "mypy>=1.10",
     "httpx2>=2.0",
-    "langchain-groq==0.1.10",          # exact-pin: requires langchain-core<0.3
-    "langchain-core==0.2.43",          # exact-pin: pydantic_v1 removed in 0.3+, needed by ragas 0.1.21 + langchain-groq 0.1.10
-    "langchain-openai>=0.1.0",         # RAGAS judge LLM (gpt-4o-mini) + embeddings (text-embedding-3-small)
+    "langchain-groq>=0.2,<1",
+    "langchain-core>=0.3.85,<1",
+    "langchain-openai>=0.3,<1",
 ]
 
 [tool.pytest.ini_options]
