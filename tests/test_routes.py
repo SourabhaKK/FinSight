@@ -265,6 +265,13 @@ def test_global_exception_handler_returns_error_key(full_client: TestClient) -> 
     assert "error" in response.json()
 
 
+def test_global_exception_handler_does_not_leak_exception_text(
+    full_client: TestClient,
+) -> None:
+    response = full_client.get("/_test_error")
+    assert "injected runtime error" not in response.text
+
+
 # ---------------------------------------------------------------------------
 # Benchmark — tagged so pytest -m "not benchmark" skips it
 # ---------------------------------------------------------------------------
