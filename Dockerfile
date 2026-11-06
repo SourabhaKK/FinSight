@@ -1,4 +1,5 @@
-FROM python:3.11-slim AS builder
+# Base image pinned by digest (tag: python:3.11-slim); Dependabot keeps it current.
+FROM python:3.11-slim@sha256:65bd3d9f1d7fa268dd1909973ba7eb4bdf41f6dcf2cfbe76ba9528b170f3fd79 AS builder
 
 WORKDIR /app
 
@@ -12,7 +13,7 @@ RUN printf '\n[[tool.uv.index]]\nname = "pytorch-cpu"\nurl = "https://download.p
 
 RUN uv sync --no-dev
 
-FROM python:3.11-slim
+FROM python:3.11-slim@sha256:65bd3d9f1d7fa268dd1909973ba7eb4bdf41f6dcf2cfbe76ba9528b170f3fd79
 
 WORKDIR /app
 
@@ -20,7 +21,11 @@ COPY --from=builder /app/.venv /app/.venv
 
 COPY src/ ./src/
 
-RUN mkdir -p artefacts
+RUN useradd --system --no-create-home --uid 10001 app \
+    && mkdir -p artefacts \
+    && chown -R app:app /app
+
+USER app
 
 EXPOSE 8000
 
