@@ -100,8 +100,8 @@ def _http_get(url: str, timeout: float = 15.0) -> str:
 
 
 def _strip_html(raw_html: str) -> str:
-    text = re.sub(r"<script[^>]*>.*?</script>", " ", raw_html, flags=re.S | re.I)
-    text = re.sub(r"<style[^>]*>.*?</style>", " ", text, flags=re.S | re.I)
+    text = re.sub(r"<script[^>]*>.*?</script[^>]*>", " ", raw_html, flags=re.S | re.I)
+    text = re.sub(r"<style[^>]*>.*?</style[^>]*>", " ", text, flags=re.S | re.I)
     text = re.sub(r"<[^>]+>", " ", text)
     text = html.unescape(text)
     text = re.sub(r"\s+", " ", text).strip()

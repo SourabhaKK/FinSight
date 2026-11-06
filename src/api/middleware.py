@@ -56,7 +56,7 @@ class GlobalExceptionMiddleware:
 
         try:
             await self.app(scope, receive, send)
-        except Exception as exc:
+        except Exception:
             logger.error(
                 "Unhandled exception on %s %s:\n%s",
                 scope.get("method", ""),
@@ -64,7 +64,7 @@ class GlobalExceptionMiddleware:
                 traceback.format_exc(),
             )
             response = JSONResponse(
-                {"error": str(exc), "status_code": 500},
+                {"error": "Internal server error", "status_code": 500},
                 status_code=500,
             )
             await response(scope, receive, send)
