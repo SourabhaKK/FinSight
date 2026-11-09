@@ -79,6 +79,9 @@ class FinSightClassifier:
             self.model.to(self.device)  # type: ignore[arg-type]
 
     def _load_from_path(self, path: str) -> None:
+        # weights_only=False is needed because the checkpoint stores the tokenizer
+        # object, and it can run code when loaded. Only load checkpoints this project
+        # saved itself (see save()), never ones from outside.
         checkpoint = torch.load(path, map_location=self.device, weights_only=False)
         self.tokenizer = checkpoint["tokenizer"]
         self.model = AutoModelForSequenceClassification.from_pretrained(

@@ -58,6 +58,8 @@ class UrgencyScorer:
 
     @classmethod
     def load(cls, path: str) -> UrgencyScorer:
+        # Trusted input only: joblib files are pickles and can run code when loaded.
+        # Load files this project saved itself, never ones from outside.
         obj = joblib.load(path)
         if not isinstance(obj, cls):
             raise TypeError(f"Expected UrgencyScorer, got {type(obj)}")

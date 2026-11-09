@@ -72,6 +72,8 @@ class BaselineClassifier:
 
     @classmethod
     def load(cls, path: str) -> BaselineClassifier:
+        # Trusted input only: joblib files are pickles and can run code when loaded.
+        # Load files this project saved itself, never ones from outside.
         obj = joblib.load(path)
         if not isinstance(obj, cls):
             raise TypeError(f"Expected BaselineClassifier, got {type(obj)}")
