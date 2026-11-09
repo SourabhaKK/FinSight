@@ -37,9 +37,9 @@ dev = [
     "ruff>=0.4",
     "mypy>=1.10",
     "httpx2>=2.0",
-    "langchain-groq>=0.2,<1",
-    "langchain-core>=0.3.85,<1",
-    "langchain-openai>=0.3,<1",
+    "langchain-groq>=0.2",
+    "langchain-core>=1.2.22",
+    "langchain-openai>=1.1.14",
 ]
 
 [tool.pytest.ini_options]
